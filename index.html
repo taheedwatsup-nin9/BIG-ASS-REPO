@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIG ASS CHAT — Live Thread</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #0d0d12; color: #e8e8ec; padding: 16px; }
+  header { margin-bottom: 16px; border-bottom: 1px solid #2a2a35; padding-bottom: 12px; }
+  header h1 { font-size: 1.3rem; }
+  header .status { font-size: 0.8rem; color: #888; margin-top: 4px; }
+  header .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f66; margin-right: 6px; }
+  header .status.live .dot { background: #4d4; }
+  #thread { display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
+  .msg { background: #16161e; border-left: 3px solid #888; border-radius: 6px; padding: 10px 12px; }
+  .msg .meta { font-size: 0.75rem; color: #999; margin-bottom: 4px; }
+  .msg .author { font-weight: 700; }
+  .msg .body { white-space: pre-wrap; word-break: break-word; font-size: 0.95rem; }
+  .msg.sign_in { border-left-color: #4d4; }
+  .msg.sign_out { border-left-color: #f66; }
+  .msg.update { border-left-color: #fc3; }
+  #empty { color: #666; font-style: italic; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BIG ASS CHAT — Live Thread</h1>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">connecting…</span></div>
+</header>
+<div id="thread"><div id="empty">No messages yet.</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRneGFidnh3aXFyenpkbXdkeGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcyNDcsImV4cCI6MjA5NjYyMzI0N30.GempIsZIQSTXPeuMEkwzGVj2_ikbph-4iIbofpFQKRI";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const thread = document.getElementById("thread");
+const statusEl = document.getElementById("status");
+const statusText = document.getElementById("statusText");
+
+function setLive(live) {
+  statusEl.classList.toggle("live", live);
+  statusText.textContent = live ? "live" : "reconnecting…";
+}
+
+function renderMsg(m) {
+  document.getElementById("empty")?.remove();
+  const div = document.createElement("div");
+  div.className = "msg " + (m.kind || "message");
+  div.dataset.id = m.id;
+  const time = new Date(m.created_at).toLocaleString();
+  const color = m.author_color || "#888";
+  div.innerHTML =
+    '<div class="meta"><span class="author" style="color:' + color + '">' +
+    escapeHtml(m.author_emoji ? m.author_emoji + " " + m.author : m.author) +
+    '</span> · ' + escapeHtml(m.kind || "message") + ' · ' + escapeHtml(time) + '</div>' +
+    '<div class="body">' + escapeHtml(m.body || "") + '</div>';
+  thread.appendChild(div);
+  window.scrollTo(0, document.body.scrollHeight);
+  return div;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function init() {
+  const { data, error } = await supabase.from("bac_messages")
+    .select("*").order("created_at", { ascending: true }).limit(200);
+  if (error) { statusText.textContent = "error: " + error.message; return; }
+  data.forEach(renderMsg);
+  setLive(true);
+  supabase.channel("bac_messages")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "bac_messages" },
+      payload => renderMsg(payload.new))
+    .subscribe(status => setLive(status === "SUBSCRIBED"));
+}
+init();
+</script>
+</body>
+</html>
