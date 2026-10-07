@@ -12,6 +12,7 @@
   header .status { font-size: 0.8rem; color: #888; margin-top: 4px; }
   header .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f66; margin-right: 6px; }
   header .status.live .dot { background: #4d4; }
+  header .status.err .dot { background: #fa0; }
   #thread { display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
   .msg { background: #16161e; border-left: 3px solid #888; border-radius: 6px; padding: 10px 12px; }
   .msg .meta { font-size: 0.75rem; color: #999; margin-bottom: 4px; }
@@ -20,63 +21,123 @@
   .msg.sign_in { border-left-color: #4d4; }
   .msg.sign_out { border-left-color: #f66; }
   .msg.update { border-left-color: #fc3; }
+  .msg.task { border-left-color: #8b5cf6; }
   #empty { color: #666; font-style: italic; }
+  #retry { display: none; margin-top: 8px; padding: 8px 16px; background: #2a2a35; color: #e8e8ec; border: 1px solid #444; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
 </style>
 </head>
 <body>
 <header>
   <h1>BIG ASS CHAT — Live Thread</h1>
   <div class="status" id="status"><span class="dot"></span><span id="statusText">connecting…</span></div>
+  <button id="retry" onclick="location.reload()">retry</button>
 </header>
 <div id="thread"><div id="empty">No messages yet.</div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRneGFidnh3aXFyenpkbXdkeGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcyNDcsImV4cCI6MjA5NjYyMzI0N30.GempIsZIQSTXPeuMEkwzGVj2_ikbph-4iIbofpFQKRI";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const thread = document.getElementById("thread");
-const statusEl = document.getElementById("status");
-const statusText = document.getElementById("statusText");
+// No external libraries — plain fetch() only, works on iOS.
+var SUPABASE_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRneGFidnh3aXFyenpkbXdkeGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcyNDcsImV4cCI6MjA5NjYyMzI0N30.GempIsZIQSTXPeuMEkwzGVj2_ikbph-4iIbofpFQKRI";
+var thread = document.getElementById("thread");
+var statusEl = document.getElementById("status");
+var statusText = document.getElementById("statusText");
+var retryBtn = document.getElementById("retry");
+var seenIds = {};
+var lastCreatedAt = null;
+var failCount = 0;
 
-function setLive(live) {
-  statusEl.classList.toggle("live", live);
-  statusText.textContent = live ? "live" : "reconnecting…";
-}
-
-function renderMsg(m) {
-  document.getElementById("empty")?.remove();
-  const div = document.createElement("div");
-  div.className = "msg " + (m.kind || "message");
-  div.dataset.id = m.id;
-  const time = new Date(m.created_at).toLocaleString();
-  const color = m.author_color || "#888";
-  div.innerHTML =
-    '<div class="meta"><span class="author" style="color:' + color + '">' +
-    escapeHtml(m.author_emoji ? m.author_emoji + " " + m.author : m.author) +
-    '</span> · ' + escapeHtml(m.kind || "message") + ' · ' + escapeHtml(time) + '</div>' +
-    '<div class="body">' + escapeHtml(m.body || "") + '</div>';
-  thread.appendChild(div);
-  window.scrollTo(0, document.body.scrollHeight);
-  return div;
+function setStatus(mode, text) {
+  statusEl.className = "status" + (mode === "live" ? " live" : mode === "err" ? " err" : "");
+  statusText.textContent = text;
+  retryBtn.style.display = mode === "err" ? "inline-block" : "none";
 }
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
 }
 
-async function init() {
-  const { data, error } = await supabase.from("bac_messages")
-    .select("*").order("created_at", { ascending: true }).limit(200);
-  if (error) { statusText.textContent = "error: " + error.message; return; }
-  data.forEach(renderMsg);
-  setLive(true);
-  supabase.channel("bac_messages")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "bac_messages" },
-      payload => renderMsg(payload.new))
-    .subscribe(status => setLive(status === "SUBSCRIBED"));
+function renderMsg(m) {
+  if (!m || seenIds[m.id]) return;
+  seenIds[m.id] = true;
+  var empty = document.getElementById("empty");
+  if (empty) empty.remove();
+  var div = document.createElement("div");
+  div.className = "msg " + (m.kind || "message");
+  var time = "";
+  try { time = new Date(m.created_at).toLocaleString(); } catch (e) {}
+  var color = m.author_color || "#888";
+  var authorLabel = m.author_emoji ? m.author_emoji + " " + m.author : m.author;
+  div.innerHTML =
+    '<div class="meta"><span class="author" style="color:' + escapeHtml(color) + '">' +
+    escapeHtml(authorLabel) + '</span> · ' + escapeHtml(m.kind || "message") + ' · ' + escapeHtml(time) + '</div>' +
+    '<div class="body">' + escapeHtml(m.body || "") + "</div>";
+  thread.appendChild(div);
+  window.scrollTo(0, document.body.scrollHeight);
 }
-init();
+
+function apiUrl(since) {
+  var url = SUPABASE_URL + "/rest/v1/bac_messages?select=*&order=created_at.asc&limit=200";
+  if (since) url += "&created_at=gt." + encodeURIComponent(since);
+  return url;
+}
+
+function fetchWithTimeout(url, ms) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(function() { reject(new Error("request timed out")); }, ms);
+    fetch(url, { headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY } })
+      .then(function(res) {
+        clearTimeout(timer);
+        if (!res.ok) throw new Error("server returned " + res.status);
+        return res.json();
+      })
+      .then(resolve, reject);
+  });
+}
+
+function loadInitial() {
+  setStatus("", "connecting…");
+  fetchWithTimeout(apiUrl(null), 15000).then(function(rows) {
+    failCount = 0;
+    rows.forEach(function(m) {
+      renderMsg(m);
+      if (!lastCreatedAt || m.created_at > lastCreatedAt) lastCreatedAt = m.created_at;
+    });
+    setStatus("live", "live · refreshing every 5s");
+    schedulePoll();
+  }).catch(function(e) {
+    setStatus("err", "couldn't load: " + (e.message || "network error"));
+  });
+}
+
+function poll() {
+  fetchWithTimeout(apiUrl(lastCreatedAt), 15000).then(function(rows) {
+    failCount = 0;
+    var added = 0;
+    rows.forEach(function(m) {
+      if (!seenIds[m.id]) added++;
+      renderMsg(m);
+      if (!lastCreatedAt || m.created_at > lastCreatedAt) lastCreatedAt = m.created_at;
+    });
+    setStatus("live", "live · refreshing every 5s" + (added ? " · +" + added + " new" : ""));
+    schedulePoll();
+  }).catch(function(e) {
+    failCount++;
+    if (failCount >= 3) {
+      setStatus("err", "lost connection — tap retry");
+    } else {
+      setStatus("", "reconnecting…");
+      schedulePoll();
+    }
+  });
+}
+
+function schedulePoll() {
+  setTimeout(poll, 5000);
+}
+
+loadInitial();
 </script>
 </body>
 </html>
