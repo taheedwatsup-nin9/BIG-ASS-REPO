@@ -4,6 +4,7 @@ import signal
 import sys
 import time
 import json
+import requests
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".watcher_state.json")
 
@@ -57,16 +58,56 @@ def get_active_chat_file(directory):
     return os.path.join(directory, best) if best else None
 
 
+
+WEBHOOK_URL = "https://cr8mor-n8n.zeabur.app/webhook/bac-message"
+HEADER_RE = re.compile(r"^(.) \[\d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]+\] (SIGN-IN|UPDATE|SIGN-OUT|message) (.*?)(?: @| RESULT|$)")
+
 def push_to_supabase(entry_text):
     """
-    Pushes a new entry to the Supabase bac_messages table.
-    Schema and exact payload format will be provided by Muse.
+    Pushes a new entry to the Supabase bac_messages table via n8n Webhook.
     Must raise on failure so the watcher retries instead of dropping the entry.
     """
-    print(f"Would push to Supabase: {entry_text[:50]}...")
-    # Example logic using supabase-py or requests:
-    # supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    # supabase.table('bac_messages').insert({"content": entry_text}).execute()
+    entries = []
+    current_entry = None
+    
+    for line in entry_text.split("\n"):
+        m = HEADER_RE.match(line)
+        if m:
+            if current_entry:
+                entries.append(current_entry)
+            emoji, kind, author = m.groups()
+            current_entry = {
+                "author": author.strip(),
+                "author_emoji": emoji,
+                "author_color": "",
+                "kind": kind.lower().replace("-", "_"),
+                "body": line + "\n"
+            }
+        else:
+            if current_entry:
+                current_entry["body"] += line + "\n"
+                if not current_entry["author_color"]:
+                    color_m = re.search(r'background:(#[0-9A-Fa-f]{6})', line)
+                    if color_m:
+                        current_entry["author_color"] = color_m.group(1)
+            else:
+                if line.strip():
+                    entries.append({
+                        "author": "System",
+                        "author_emoji": "🤖",
+                        "author_color": "#CCCCCC",
+                        "kind": "message",
+                        "body": line + "\n"
+                    })
+    if current_entry:
+        entries.append(current_entry)
+        
+    for payload in entries:
+        payload["body"] = payload["body"].strip()
+        print(f"Pushing to Supabase (via Webhook): {payload['author']} - {payload['kind']}")
+        response = requests.post(WEBHOOK_URL, json=payload, timeout=10)
+        response.raise_for_status()
+
 
 
 def read_new_lines(path, offset, flush_partial=False):
