@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
-"""Import Hermes data into Supabase brain_memory table. (v2.2, MUZI 2026-10-21)
+"""Import Hermes data into Supabase brain_memory table. (v2.3, MUZI 2026-10-21)
 
-What this syncs: the 5 core/config files from the real Hermes home.
+What this syncs:
+1) The 5 core/config files from the real Hermes home.
+2) ANSWERED conversations from ~/.hermes/state.db (v2.3): one
+   brain_memory row per session that has at least one assistant
+   reply, keyed on the full sessions.id (embedded in the title).
+   - 22 of 47 surveyed sessions have a user turn and NO reply —
+     failed provider calls. They are skipped, like the dumps.
+   - Tool-role messages are EXCLUDED from the transcript (they are
+     half the bytes and the likeliest place for a secret to ride
+     along); the row's header counts them as omitted.
+   - The whole history is ~38 KB, so a full rebuild each run is
+     fine; no incremental logic yet. message_uid is populated on
+     100% of messages if a per-message design is ever needed.
+
 What it NEVER syncs: sessions/request_dump_*.json. Claude's inspection
 of the actual files (2026-10-21) showed all 23 are API ERROR dumps —
 {error, reason, request, session_id, timestamp} from failed provider
-calls (Groq 9, Ollama 5, Anthropic 3, Gemini 2, MoA 2, Copilot 1,
-xAI 1) — carrying request headers and full prompt bodies. They are
-failure logs, not conversation history, and they never enter the
-brain under a "Hermes Session" label. Real conversations live in
-~/.hermes/state.db (sessions + messages) and sync through a separate
-reader keyed on messages.message_uid. The dumps stay on disk,
-untouched; the sync only counts them so the skip is visible.
+calls — carrying request headers and full prompt bodies. They are
+failure logs, not conversation history.
 
 v2.1 fix (ground truth traced on the Lenovo via Claude, 2026-10-21):
 v1/v2 read HERMES_DIR=/tmp/hermes_data, a staging folder that NOTHING
 on the machine ever wrote to — it does not even exist. Every nightly
 hermes-sync run since the journal begins (2026-09-17) imported 0 rows
 and still exited as success. v2.1+ reads the sources from their real
-homes: ~/.hermes (a symlink to ~/Documents/Agent_Workspaces/hermes) —
-memories/MEMORY.md, memories/USER.md, SOUL.md, gateway_state.json,
-channel_directory.json. gemini_brain_digest.md exists nowhere; it
-stays an optional skip. An empty input set is a FAILURE (exit 3),
-never a silent success.
+homes: ~/.hermes (a symlink to ~/Documents/Agent_Workspaces/hermes).
+gemini_brain_digest.md exists nowhere; it stays an optional skip.
+An empty input set is a FAILURE (exit 3), never a silent success.
 
 v2 changes (kept):
 - NO hardcoded credentials. The Supabase service key is read from the
@@ -32,12 +38,14 @@ v2 changes (kept):
 - TLS certificate verification is ON (v1 disabled it).
 - A failed delete no longer gets silently swallowed before the
   insert; the row is counted failed and skipped.
-- --dry-run walks everything and prints what WOULD be written, with
-  no network calls and no key required.
+- --dry-run walks everything and prints what WOULD be written (titles
+  and sizes only, never transcript content), with no network calls
+  and no key required.
 """
 import json
 import os
 import glob
+import sqlite3
 import sys
 import urllib.request
 import urllib.error
@@ -46,6 +54,7 @@ from datetime import datetime
 
 # Real Hermes home; os.path.realpath resolves the ~/.hermes symlink.
 HERMES_HOME = os.path.realpath(os.path.expanduser("~/.hermes"))
+STATE_DB = os.path.join(HERMES_HOME, "state.db")
 DEFAULT_ENV_FILE = os.path.expanduser("~/.config/cr8mor/supabase.env")
 DEFAULT_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co"
 KEY_NAMES = ("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY",
@@ -130,8 +139,61 @@ def import_files(file_map, section_label):
     return success, failed, found
 
 
+def sync_state_db():
+    """One brain row per ANSWERED session in state.db.
+    Returns (success, failed, inputs_found)."""
+    print("Importing Hermes conversations from state.db...")
+    if not os.path.exists(STATE_DB):
+        print("  skip state.db (not found)")
+        return 0, 0, 0
+    success = failed = found = 0
+    conn = sqlite3.connect(f"file:{STATE_DB}?mode=ro", uri=True)
+    try:
+        sessions = conn.execute(
+            "SELECT s.id, s.source, s.model, s.started_at FROM sessions s "
+            "WHERE EXISTS (SELECT 1 FROM messages m "
+            "              WHERE m.session_id = s.id AND m.role = 'assistant' AND m.active = 1) "
+            "ORDER BY s.started_at").fetchall()
+        skipped_unanswered = conn.execute(
+            "SELECT COUNT(*) FROM sessions s "
+            "WHERE NOT EXISTS (SELECT 1 FROM messages m "
+            "                  WHERE m.session_id = s.id AND m.role = 'assistant' AND m.active = 1)"
+        ).fetchone()[0]
+        for session_id, sess_source, model, started_at in sessions:
+            found += 1
+            try:
+                rows = conn.execute(
+                    "SELECT role, content FROM messages "
+                    "WHERE session_id = ? AND active = 1 AND role IN ('user', 'assistant') "
+                    "ORDER BY timestamp, id", (session_id,)).fetchall()
+                tool_count = conn.execute(
+                    "SELECT COUNT(*) FROM messages "
+                    "WHERE session_id = ? AND active = 1 AND role = 'tool'",
+                    (session_id,)).fetchone()[0]
+                started = datetime.fromtimestamp(started_at)
+                title = (f"Hermes Chat: {started:%Y-%m-%d %H:%M} "
+                         f"({sess_source}, {model}, {len(rows)} msgs) [{session_id}]")
+                header = (f"session_id: {session_id}\nsource: {sess_source} · model: {model} · "
+                          f"started: {started.isoformat()}\nmessages: {len(rows)} "
+                          f"(tool outputs omitted: {tool_count})\n")
+                transcript = "\n\n".join(f"[{role}] {content or ''}" for role, content in rows)
+                content = header + "\n" + transcript
+                tags = ["hermes", "chat", "state_db", f"source_{sess_source}"]
+                upsert_to_supabase("hermes_chat", title, content, tags)
+                print(f"  ok {title} ({len(content)} chars)")
+                success += 1
+            except Exception as e:
+                print(f"  FAIL session {session_id}: {e}")
+                failed += 1
+    finally:
+        conn.close()
+    if skipped_unanswered:
+        print(f"  skipped {skipped_unanswered} unanswered sessions (user turn, no reply)")
+    return success, failed, found
+
+
 def main():
-    print("Hermes -> Supabase Brain Import (v2.2)")
+    print("Hermes -> Supabase Brain Import (v2.3)")
     print(f"   Source: {HERMES_HOME}")
     print(f"   Timestamp: {datetime.now().isoformat()}")
     if DRY_RUN:
@@ -161,6 +223,11 @@ def main():
         success += s
         failed += f
         inputs_found += n
+
+    s, f, n = sync_state_db()
+    success += s
+    failed += f
+    inputs_found += n
 
     # The request dumps are API error logs, not sessions. Never imported.
     dumps = sorted(glob.glob(os.path.join(HERMES_HOME, "sessions", "request_dump_*.json")))
