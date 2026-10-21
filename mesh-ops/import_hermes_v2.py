@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import Hermes data into Supabase brain_memory table. (v2.4, MUZI 2026-10-21)
+"""Import Hermes data into Supabase brain_memory table. (v2.4.1, MUZI 2026-10-21)
 
 What this syncs:
 1) The 5 core/config files from the real Hermes home.
@@ -39,8 +39,9 @@ v2 changes (kept):
 - A failed delete no longer gets silently swallowed before the
   insert; the row is counted failed and skipped.
 - --dry-run walks everything and prints what WOULD be written (titles
-  and sizes only, never transcript content), with no network calls
-  and no key required.
+  and sizes only, never transcript content) and makes no writes. If a
+  key happens to be configured, the tombstone check additionally does
+  one read-only GET to list chat titles; without a key it skips.
 """
 import json
 import os
@@ -179,12 +180,14 @@ def tombstone_stale_chats(keep_ids):
                     print(f"  [dry-run] WOULD TOMBSTONE {title}")
                 else:
                     del_url = (f"{SUPABASE_URL}/rest/v1/brain_memory"
-                               f"?title=eq.{urllib.parse.quote(title)}")
+                               f"?title=eq.{urllib.parse.quote(title)}"
+                               f"&source=eq.hermes_chat")
                     del_req = urllib.request.Request(
                         del_url, headers=headers, method="DELETE")
                     urllib.request.urlopen(del_req, timeout=10)
                     print(f"  tombstoned {title}")
                 removed += 1
+        print(f"  tombstone: checked {len(rows)} chat rows, {removed} stale")
     except Exception as e:
         print(f"  tombstone pass failed (non-fatal): {e}")
     return removed
@@ -250,11 +253,12 @@ def sync_state_db():
 
 
 def main():
-    print("Hermes -> Supabase Brain Import (v2.4)")
+    print("Hermes -> Supabase Brain Import (v2.4.1)")
     print(f"   Source: {HERMES_HOME}")
     print(f"   Timestamp: {datetime.now().isoformat()}")
     if DRY_RUN:
-        print("   Mode: DRY RUN (no writes, no key needed)")
+        print("   Mode: DRY RUN (no writes; if a key is configured, the "
+              "tombstone check may read chat titles)")
     elif not SUPABASE_SERVICE_KEY:
         print("FATAL: no Supabase service key found. Looked in the process")
         print("environment and the env file for any of: " + ", ".join(KEY_NAMES))
