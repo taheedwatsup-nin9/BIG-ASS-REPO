@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import Hermes data into Supabase brain_memory table. (v2.3, MUZI 2026-10-21)
+"""Import Hermes data into Supabase brain_memory table. (v2.4, MUZI 2026-10-21)
 
 What this syncs:
 1) The 5 core/config files from the real Hermes home.
@@ -44,6 +44,7 @@ v2 changes (kept):
 """
 import json
 import os
+import re
 import glob
 import sqlite3
 import sys
@@ -139,8 +140,59 @@ def import_files(file_map, section_label):
     return success, failed, found
 
 
+def tombstone_stale_chats(keep_ids):
+    """Delete hermes_chat rows whose session no longer exists in state.db.
+
+    keep_ids = EVERY session id currently in state.db (answered or not):
+    a brain row is stale only when its session is GONE entirely.
+    Safety: callers must pass a non-empty keep set from a successful
+    read — this refuses to run on an empty one, so a bad read can
+    never wipe the brain's chat rows. Listing titles needs the key
+    (in a keyless dry run it simply skips). Failures are reported
+    but never fail the sync itself.
+    """
+    if not keep_ids:
+        print("  tombstone: skipped (empty keep set — refusing to guess)")
+        return 0
+    if not SUPABASE_SERVICE_KEY:
+        print("  tombstone: skipped (no key available to list brain rows)")
+        return 0
+    headers = {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+    }
+    removed = 0
+    try:
+        q = urllib.parse.urlencode(
+            {"select": "title", "source": "eq.hermes_chat", "limit": "10000"})
+        req = urllib.request.Request(
+            f"{SUPABASE_URL}/rest/v1/brain_memory?{q}", headers=headers)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            rows = json.load(resp)
+        for row in rows:
+            title = row.get("title") or ""
+            m = re.search(r"\[([^\]]+)\]\s*$", title)
+            if not m:
+                continue  # not a state.db-keyed title — never touch it
+            if m.group(1) not in keep_ids:
+                if DRY_RUN:
+                    print(f"  [dry-run] WOULD TOMBSTONE {title}")
+                else:
+                    del_url = (f"{SUPABASE_URL}/rest/v1/brain_memory"
+                               f"?title=eq.{urllib.parse.quote(title)}")
+                    del_req = urllib.request.Request(
+                        del_url, headers=headers, method="DELETE")
+                    urllib.request.urlopen(del_req, timeout=10)
+                    print(f"  tombstoned {title}")
+                removed += 1
+    except Exception as e:
+        print(f"  tombstone pass failed (non-fatal): {e}")
+    return removed
+
+
 def sync_state_db():
-    """One brain row per ANSWERED session in state.db.
+    """One brain row per ANSWERED session in state.db, plus tombstones
+    for brain rows whose session has been deleted from state.db.
     Returns (success, failed, inputs_found)."""
     print("Importing Hermes conversations from state.db...")
     if not os.path.exists(STATE_DB):
@@ -149,6 +201,8 @@ def sync_state_db():
     success = failed = found = 0
     conn = sqlite3.connect(f"file:{STATE_DB}?mode=ro", uri=True)
     try:
+        all_session_ids = {r[0] for r in
+                           conn.execute("SELECT id FROM sessions").fetchall()}
         sessions = conn.execute(
             "SELECT s.id, s.source, s.model, s.started_at FROM sessions s "
             "WHERE EXISTS (SELECT 1 FROM messages m "
@@ -189,11 +243,14 @@ def sync_state_db():
         conn.close()
     if skipped_unanswered:
         print(f"  skipped {skipped_unanswered} unanswered sessions (user turn, no reply)")
+    tomb = tombstone_stale_chats(all_session_ids)
+    if tomb:
+        print(f"  tombstoned {tomb} stale chat rows (session deleted from state.db)")
     return success, failed, found
 
 
 def main():
-    print("Hermes -> Supabase Brain Import (v2.3)")
+    print("Hermes -> Supabase Brain Import (v2.4)")
     print(f"   Source: {HERMES_HOME}")
     print(f"   Timestamp: {datetime.now().isoformat()}")
     if DRY_RUN:
