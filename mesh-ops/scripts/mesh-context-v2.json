@@ -1,0 +1,1305 @@
+{
+  "lineage": {
+    "snapshot_id": "cr8mesh-2026-10-20-v2",
+    "base_snapshot_id": "cr8mesh-2026-09-17-v1",
+    "generated_at": "2026-10-20T19:00:00Z",
+    "scanner": {
+      "name": "muzi-migrate_v1_to_v2",
+      "version": "1.0",
+      "ran_on": "muzi-vm"
+    },
+    "source_status": "fresh",
+    "v1_header_claim": "125 nodes \u00b7 295 edges \u00b7 local filesystem \u00b7 2026-09-17",
+    "v1_note": "Header claims 125 nodes / 295 edges; the embedded arrays in this snapshot carry fewer (excerpt). Conduit probe figures are from 2026-10-01 Lenovo probes. Partial live re-verification 2026-10-20 (MUZI mesh-ops audit, see mesh-ops/ALERT-LEGEND.md): Google Drive and Supabase were checked live and their service statuses below updated to live; every other figure remains the 2026-09-17 snapshot / 2026-10-01 probes until a full re-scan lands.",
+    "v1_conduit_history": [
+      {
+        "value": "119",
+        "label": "Assets"
+      },
+      {
+        "value": "175",
+        "label": "Links"
+      },
+      {
+        "value": "45",
+        "label": "Live"
+      },
+      {
+        "value": "1",
+        "label": "Degraded"
+      },
+      {
+        "value": "27",
+        "label": "Down"
+      },
+      {
+        "value": "46",
+        "label": "Not probed"
+      },
+      {
+        "value": "22",
+        "label": "Lenovo + Cloud"
+      },
+      {
+        "value": "16",
+        "label": "Lenovo exclusive"
+      },
+      {
+        "value": "15",
+        "label": "Cloud exclusive"
+      },
+      {
+        "value": "1",
+        "label": "Absent"
+      }
+    ],
+    "migration_rule": "Unverified v1 statuses land as unprobed; only the 2026-10-20 pass-1 verified set keeps a status.",
+    "v1_service_claims": {
+      "claude": "live",
+      "docker": "down",
+      "n8n": "live",
+      "gh": "live",
+      "gcloud": "down",
+      "gdrive": "live",
+      "supabase": "live",
+      "tailscale": "live",
+      "ollama": "live",
+      "hermes": "live",
+      "grok": "down",
+      "aider": "live",
+      "figma": "idle",
+      "vercel": "idle",
+      "Chrome Remote Desktop": "down",
+      "Squarespace": "idle"
+    },
+    "node_count": 36,
+    "edge_count": 34,
+    "counts_computed_at": "2026-10-21T07:20:15Z"
+  },
+  "nodes": [
+    {
+      "id": "lenovo",
+      "kind": "host",
+      "name": "Lenovo",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "host"
+    },
+    {
+      "id": "zeabur",
+      "kind": "host",
+      "name": "CR8MOR Server",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "host"
+    },
+    {
+      "id": "cloud",
+      "kind": "host",
+      "name": "Cloud",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "host"
+    },
+    {
+      "id": "brain",
+      "kind": "workspace",
+      "name": "BRAIN",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 604800,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "folder"
+    },
+    {
+      "id": "skills",
+      "kind": "workspace",
+      "name": "skills",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 604800,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "folder"
+    },
+    {
+      "id": "workspaces",
+      "kind": "workspace",
+      "name": "Workspaces",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 604800,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "folder"
+    },
+    {
+      "id": "claude",
+      "kind": "service",
+      "name": "Claude",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "docker",
+      "kind": "service",
+      "name": "Docker",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "n8n",
+      "kind": "service",
+      "name": "n8n",
+      "owner_lane": "cloud",
+      "observed_status": "live",
+      "status_confidence": "verified",
+      "last_verified_at": "2026-10-20T19:00:00Z",
+      "verified_by": "muzi-pass1-audit",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md (pass 1, 2026-10-20) \u2014 HTTP 200 cr8mor-n8n.zeabur.app",
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "ollama",
+      "kind": "service",
+      "name": "Ollama",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "supabase",
+      "kind": "service",
+      "name": "Supabase",
+      "owner_lane": "cloud",
+      "observed_status": "live",
+      "status_confidence": "verified",
+      "last_verified_at": "2026-10-20T19:00:00Z",
+      "verified_by": "muzi-pass1-audit",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md (pass 1, 2026-10-20) \u2014 REST 200; newest bac_messages row 2026-10-19T19:11:10Z",
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "tailscale",
+      "kind": "service",
+      "name": "Tailscale",
+      "owner_lane": "cloud",
+      "observed_status": "live",
+      "status_confidence": "indirect",
+      "last_verified_at": "2026-10-20T19:00:00Z",
+      "verified_by": "muzi-pass1-audit",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md (pass 1, 2026-10-20) \u2014 tailscale status device list read 2026-10-20",
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "gcloud",
+      "kind": "service",
+      "name": "Google Cloud",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "dead"
+    },
+    {
+      "id": "gdrive",
+      "kind": "service",
+      "name": "Google Drive",
+      "owner_lane": "cloud",
+      "observed_status": "live",
+      "status_confidence": "verified",
+      "last_verified_at": "2026-10-20T19:00:00Z",
+      "verified_by": "muzi-pass1-audit",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md (pass 1, 2026-10-20) \u2014 Drive connector listed files 2026-10-20T10:45:51Z",
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "gh",
+      "kind": "service",
+      "name": "GitHub",
+      "owner_lane": "cloud",
+      "observed_status": "live",
+      "status_confidence": "verified",
+      "last_verified_at": "2026-10-20T19:00:00Z",
+      "verified_by": "muzi-pass1-audit",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md (pass 1, 2026-10-20) \u2014 BIG-ASS-REPO answers 200",
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "hermes",
+      "kind": "service",
+      "name": "Hermes Agent",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "aider",
+      "kind": "agent",
+      "name": "Aider",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "skill"
+    },
+    {
+      "id": "codex",
+      "kind": "agent",
+      "name": "Codex CLI",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "skill"
+    },
+    {
+      "id": "grok",
+      "kind": "service",
+      "name": "Grok CLI",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "dead"
+    },
+    {
+      "id": "gemini",
+      "kind": "agent",
+      "name": "Gemini",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "skill"
+    },
+    {
+      "id": "rclone",
+      "kind": "service",
+      "name": "rclone",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "script"
+    },
+    {
+      "id": "vscode",
+      "kind": "service",
+      "name": "VS Code",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "python",
+      "kind": "service",
+      "name": "Python",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "android",
+      "kind": "service",
+      "name": "Android Studio",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "dead"
+    },
+    {
+      "id": "cred-gh",
+      "kind": "external_dependency",
+      "name": "GitHub token",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "cred"
+    },
+    {
+      "id": "cred-sb",
+      "kind": "external_dependency",
+      "name": "Supabase key",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "cred"
+    },
+    {
+      "id": "cred-ts",
+      "kind": "external_dependency",
+      "name": "Tailscale auth",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 259200,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "cred"
+    },
+    {
+      "id": "mcp",
+      "kind": "service",
+      "name": "MCP server",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "mcp"
+    },
+    {
+      "id": "figma",
+      "kind": "service",
+      "name": "Figma",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "vercel",
+      "kind": "service",
+      "name": "Vercel",
+      "owner_lane": "cloud",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "minio",
+      "kind": "service",
+      "name": "MinIO",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "notion",
+      "kind": "asset",
+      "name": "Notion",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 604800,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "agentdoc"
+    },
+    {
+      "id": "obs",
+      "kind": "service",
+      "name": "Obsidian Sync",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "service"
+    },
+    {
+      "id": "skillmd",
+      "kind": "service",
+      "name": "SKILL.md sprawl",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "dead"
+    },
+    {
+      "id": "mirror",
+      "kind": "service",
+      "name": "Empty mirror",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "dead"
+    },
+    {
+      "id": "wol",
+      "kind": "service",
+      "name": "Wake-on-LAN",
+      "owner_lane": "lenovo",
+      "observed_status": "unprobed",
+      "status_confidence": "unknown",
+      "last_verified_at": null,
+      "verified_by": null,
+      "evidence_ref": null,
+      "freshness_policy": {
+        "stale_after_seconds": 86400,
+        "decay_to": "unprobed"
+      },
+      "probes": [],
+      "v1_kind": "script"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-001",
+      "from": "lenovo",
+      "to": "brain",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-002",
+      "from": "lenovo",
+      "to": "skills",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-003",
+      "from": "lenovo",
+      "to": "workspaces",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-004",
+      "from": "lenovo",
+      "to": "claude",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-005",
+      "from": "lenovo",
+      "to": "vscode",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-006",
+      "from": "lenovo",
+      "to": "python",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-007",
+      "from": "lenovo",
+      "to": "aider",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-008",
+      "from": "lenovo",
+      "to": "rclone",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-009",
+      "from": "lenovo",
+      "to": "tailscale",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-010",
+      "from": "lenovo",
+      "to": "cred-gh",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-011",
+      "from": "lenovo",
+      "to": "wol",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-012",
+      "from": "brain",
+      "to": "skills",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-013",
+      "from": "brain",
+      "to": "obs",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-014",
+      "from": "skills",
+      "to": "skillmd",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-015",
+      "from": "workspaces",
+      "to": "android",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-016",
+      "from": "workspaces",
+      "to": "mirror",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-017",
+      "from": "zeabur",
+      "to": "n8n",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-018",
+      "from": "zeabur",
+      "to": "hermes",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-019",
+      "from": "zeabur",
+      "to": "ollama",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-020",
+      "from": "zeabur",
+      "to": "docker",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-021",
+      "from": "cloud",
+      "to": "supabase",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-022",
+      "from": "cloud",
+      "to": "vercel",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-023",
+      "from": "cloud",
+      "to": "gcloud",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-024",
+      "from": "cloud",
+      "to": "gdrive",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-025",
+      "from": "cloud",
+      "to": "gemini",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-026",
+      "from": "cloud",
+      "to": "grok",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-027",
+      "from": "n8n",
+      "to": "mcp",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-028",
+      "from": "hermes",
+      "to": "ollama",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-029",
+      "from": "supabase",
+      "to": "cred-sb",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-030",
+      "from": "tailscale",
+      "to": "zeabur",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-031",
+      "from": "tailscale",
+      "to": "cred-ts",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-032",
+      "from": "gh",
+      "to": "cred-gh",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-033",
+      "from": "rclone",
+      "to": "gdrive",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    },
+    {
+      "id": "e-034",
+      "from": "claude",
+      "to": "mcp",
+      "type": "depends_on",
+      "status": "unprobed",
+      "probe_command": null,
+      "last_verified_at": null,
+      "evidence_ref": null,
+      "triage_order": 99
+    }
+  ],
+  "alerts": [
+    {
+      "alert_id": "alert-001",
+      "entity_id": "lenovo",
+      "severity": "medium",
+      "issue": "Stale snapshot",
+      "root_cause_hint": null,
+      "fix_target": "Full re-scan (Lenovo probes + cloud checks), then dataset refresh. Two service statuses partially refreshed today (rows 12, 15)",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-002",
+      "entity_id": "gcloud",
+      "severity": "high",
+      "issue": "Root blocker \u2014 gcloud SDK gone",
+      "root_cause_hint": null,
+      "fix_target": "Lenovo: restore gcloud SDK. Console-side billing / orphan LB decisions are Taheed's. Feeds the Vertex credit thread (row 11)",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-003",
+      "entity_id": "lenovo",
+      "severity": "medium",
+      "issue": "Lost with talinux",
+      "root_cause_hint": null,
+      "fix_target": "Search Lenovo + mirrors when reachable; read the two Drive docs for provenance (where the asset was generated/stored) \u2014 safe next step",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-004",
+      "entity_id": "brain",
+      "severity": "low",
+      "issue": "BRAIN inside BRAIN",
+      "root_cause_hint": null,
+      "fix_target": "None",
+      "owner_lane": "lenovo",
+      "unblock_condition": "none \u2014 ruled no-action (divergent snapshot, not a dupe)",
+      "status": "fixed",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-005",
+      "entity_id": "mirror",
+      "severity": "low",
+      "issue": "Empty mirror skeleton",
+      "root_cause_hint": null,
+      "fix_target": "Deleting 21k empty dirs is destructive \u2014 needs Taheed's explicit go after on-Lenovo verification",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-006",
+      "entity_id": "workspaces",
+      "severity": "low",
+      "issue": "Workspaces cr8mor duplication",
+      "root_cause_hint": null,
+      "fix_target": "Dedupe = deletion \u2192 Taheed decision after verification. His standing \"no dupe files\" rule (2026-10-20) supports cleaning, not silently",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-007",
+      "entity_id": "rclone",
+      "severity": "low",
+      "issue": "Two rclone mounts",
+      "root_cause_hint": null,
+      "fix_target": "Remove the unused mount definition on the Lenovo, or confirm it's intentional failover",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-008",
+      "entity_id": "skillmd",
+      "severity": "low",
+      "issue": "SKILL.md sprawl",
+      "root_cause_hint": null,
+      "fix_target": "On-Lenovo triage of non-real SKILL.md files (archival/deletion \u2192 decision)",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-009",
+      "entity_id": "lenovo",
+      "severity": "high",
+      "issue": "No agent connected",
+      "root_cause_hint": null,
+      "fix_target": "**Taheed-side: enable/start sshd (OpenSSH Server) on the Lenovo.** That one action unblocks verification for every blocked-on-lenovo row. If SSH starts answering, those items unblock",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-010",
+      "entity_id": "docker",
+      "severity": "medium",
+      "issue": "Service: Docker \u2014 down",
+      "root_cause_hint": null,
+      "fix_target": "Pin down where this Docker node lives (Lenovo Docker vs Zeabur internal) during the re-scan",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-011",
+      "entity_id": "lenovo",
+      "severity": "high",
+      "issue": "Service: Google Cloud \u2014 down",
+      "root_cause_hint": null,
+      "fix_target": "Taheed provides GCP project ID + service-account key (Vertex AI User role) via Zeabur env vars (his infra rule) \u2192 credit becomes verifiable and Imagen-on-Vertex can be wired",
+      "owner_lane": "taheed",
+      "unblock_condition": "Taheed decision",
+      "status": "open",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-012",
+      "entity_id": "gdrive",
+      "severity": "low",
+      "issue": "Service: Google Drive \u2014 down",
+      "root_cause_hint": null,
+      "fix_target": "Status refreshed to `live` in mesh-context.json (FIX-LOG #2)",
+      "owner_lane": "cloud",
+      "unblock_condition": "re-probe confirms the fix",
+      "status": "fixed",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-013",
+      "entity_id": "grok",
+      "severity": "medium",
+      "issue": "Service: Grok CLI \u2014 down",
+      "root_cause_hint": null,
+      "fix_target": "Verify CLI install on the Lenovo when reachable",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-014",
+      "entity_id": "lenovo",
+      "severity": "medium",
+      "issue": "Service: Chrome Remote Desktop \u2014 down",
+      "root_cause_hint": null,
+      "fix_target": "Check the CRD host service on the Lenovo; Tailscale + SSH (row 9) is the durable replacement",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-015",
+      "entity_id": "supabase",
+      "severity": "low",
+      "issue": "Service: Supabase \u2014 degraded",
+      "root_cause_hint": null,
+      "fix_target": "Status refreshed to `live` in mesh-context.json (FIX-LOG #2)",
+      "owner_lane": "cloud",
+      "unblock_condition": "re-probe confirms the fix",
+      "status": "fixed",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-016",
+      "entity_id": "zeabur",
+      "severity": "medium",
+      "issue": "NEW \u2014 Zeabur API blind spot",
+      "root_cause_hint": null,
+      "fix_target": "Taheed reconnects/re-authorizes the Zeabur connector (credential actions are his; MUZI never re-authenticates). Until then, monitor known service URLs directly",
+      "owner_lane": "taheed",
+      "unblock_condition": "Taheed decision",
+      "status": "open",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-017",
+      "entity_id": "zeabur",
+      "severity": "medium",
+      "issue": "NEW \u2014 Hermes / Ollama on Zeabur unverified",
+      "root_cause_hint": null,
+      "fix_target": "Unblocks with row 16's re-auth, or by recording the services' Zeabur URLs in the mesh source data",
+      "owner_lane": "taheed",
+      "unblock_condition": "Taheed decision",
+      "status": "open",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    },
+    {
+      "alert_id": "alert-018",
+      "entity_id": "lenovo",
+      "severity": "medium",
+      "issue": "Conduit figures stale",
+      "root_cause_hint": null,
+      "fix_target": "Full conduit re-probe once the Lenovo is workable (row 9)",
+      "owner_lane": "lenovo",
+      "unblock_condition": "sshd answers on Lenovo port 22",
+      "status": "blocked",
+      "evidence_ref": "mesh-ops/ALERT-LEGEND.md",
+      "last_updated_at": "2026-10-20"
+    }
+  ]
+}
