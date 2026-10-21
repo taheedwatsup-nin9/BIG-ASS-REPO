@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
-"""Import Hermes data into Supabase brain_memory table. (v2, MUZI 2026-10-21)
+"""Import Hermes data into Supabase brain_memory table. (v2.1, MUZI 2026-10-21)
 
-Changes from v1:
+v2.1 fix (ground truth traced on the Lenovo via Claude, 2026-10-21):
+v1/v2 read HERMES_DIR=/tmp/hermes_data, a staging folder that NOTHING on
+the machine ever wrote to — it does not even exist. Every nightly
+hermes-sync run since the journal begins (2026-09-17) imported 0 rows
+and still exited as success. The staging step only ever happened by
+hand, once, in the Antigravity scratch session the script was born in.
+v2.1 reads the sources from their real homes instead:
+  ~/.hermes (a symlink to ~/Documents/Agent_Workspaces/hermes):
+    memories/MEMORY.md, memories/USER.md, SOUL.md,
+    gateway_state.json, channel_directory.json,
+    sessions/request_dump_*.json
+  gemini_brain_digest.md exists nowhere; it stays an optional skip.
+And an empty input set is a FAILURE (exit 3), never a silent success.
+
+v2 changes (kept):
 - NO hardcoded credentials. The Supabase service key is read from the
   environment (the hermes-sync unit already loads
   ~/.config/cr8mor/supabase.env via EnvironmentFile) or by parsing that
@@ -25,7 +39,8 @@ import urllib.error
 import urllib.parse
 from datetime import datetime
 
-HERMES_DIR = "/tmp/hermes_data"
+# Real Hermes home; os.path.realpath resolves the ~/.hermes symlink.
+HERMES_HOME = os.path.realpath(os.path.expanduser("~/.hermes"))
 DEFAULT_ENV_FILE = os.path.expanduser("~/.config/cr8mor/supabase.env")
 DEFAULT_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co"
 KEY_NAMES = ("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY",
@@ -63,9 +78,9 @@ DRY_RUN = "--dry-run" in sys.argv
 
 def upsert_to_supabase(source, title, content, tags):
     """Delete-by-exact-title then insert. Titles are unique by
-    construction in v2, so this is collision-safe without any schema
-    change. (If the optional unique index from
-    brain_memory_unique_title.sql is applied, this stays compatible.)"""
+    construction, so this is collision-safe without any schema change.
+    (If the optional unique index from brain_memory_unique_title.sql
+    is applied, this stays compatible.)"""
     if DRY_RUN:
         print(f"  [dry-run] would write: {title} ({len(content)} chars, source={source})")
         return
@@ -98,33 +113,36 @@ def session_title(basename, data, content_str):
 
 
 def main():
-    print("Hermes -> Supabase Brain Import (v2)")
-    print(f"   Source: {HERMES_DIR}")
+    print("Hermes -> Supabase Brain Import (v2.1)")
+    print(f"   Source: {HERMES_HOME}")
     print(f"   Timestamp: {datetime.now().isoformat()}")
     if DRY_RUN:
         print("   Mode: DRY RUN (no writes, no key needed)")
     elif not SUPABASE_SERVICE_KEY:
         print("FATAL: no Supabase service key found. Looked in the process")
         print("environment and the env file for any of: " + ", ".join(KEY_NAMES))
-        print("The hermes-sync unit loads ~/.config/cr8mor/supabase.env —")
+        print("The hermes-sync unit loads ~/.config/cr8mor/supabase.env -")
         print("put the (rotated) service-role key there under one of those names.")
         sys.exit(2)
 
     success = 0
     failed = 0
+    inputs_found = 0
 
+    # relpath under HERMES_HOME -> (source, title, tags)
     md_files = {
-        "MEMORY.md": ("hermes_memory", "Hermes: Agent Memory", ["hermes", "memory", "cr8app", "agent_knowledge"]),
-        "USER.md": ("hermes_user_profile", "Hermes: User Profile", ["hermes", "user", "profile", "preferences"]),
+        "memories/MEMORY.md": ("hermes_memory", "Hermes: Agent Memory", ["hermes", "memory", "cr8app", "agent_knowledge"]),
+        "memories/USER.md": ("hermes_user_profile", "Hermes: User Profile", ["hermes", "user", "profile", "preferences"]),
         "SOUL.md": ("hermes_soul", "Hermes: Soul/Identity Config", ["hermes", "soul", "identity", "config"]),
         "gemini_brain_digest.md": ("hermes_brain_digest", "Hermes: Gemini Brain Digest", ["hermes", "brain", "digest"]),
     }
     print("Importing core Hermes files...")
-    for filename, (source, title, tags) in md_files.items():
-        fpath = os.path.join(HERMES_DIR, filename)
+    for relpath, (source, title, tags) in md_files.items():
+        fpath = os.path.join(HERMES_HOME, relpath)
         if not os.path.exists(fpath):
-            print(f"  skip {filename} (not found)")
+            print(f"  skip {relpath} (not found)")
             continue
+        inputs_found += 1
         try:
             with open(fpath) as f:
                 content = f.read()
@@ -132,7 +150,7 @@ def main():
             print(f"  ok {title} ({len(content)} chars)")
             success += 1
         except Exception as e:
-            print(f"  FAIL {filename}: {e}")
+            print(f"  FAIL {relpath}: {e}")
             failed += 1
 
     json_configs = {
@@ -140,11 +158,12 @@ def main():
         "channel_directory.json": ("hermes_channels", "Hermes: Channel Directory", ["hermes", "channels", "directory"]),
     }
     print("Importing Hermes config files...")
-    for filename, (source, title, tags) in json_configs.items():
-        fpath = os.path.join(HERMES_DIR, filename)
+    for relpath, (source, title, tags) in json_configs.items():
+        fpath = os.path.join(HERMES_HOME, relpath)
         if not os.path.exists(fpath):
-            print(f"  skip {filename} (not found)")
+            print(f"  skip {relpath} (not found)")
             continue
+        inputs_found += 1
         try:
             with open(fpath) as f:
                 content = f.read()
@@ -152,13 +171,14 @@ def main():
             print(f"  ok {title} ({len(content)} chars)")
             success += 1
         except Exception as e:
-            print(f"  FAIL {filename}: {e}")
+            print(f"  FAIL {relpath}: {e}")
             failed += 1
 
-    session_files = sorted(glob.glob(os.path.join(HERMES_DIR, "request_dump_*.json")))
+    session_files = sorted(glob.glob(os.path.join(HERMES_HOME, "sessions", "request_dump_*.json")))
     print(f"Importing {len(session_files)} Hermes session dumps...")
     for fpath in session_files:
         basename = os.path.basename(fpath)
+        inputs_found += 1
         try:
             with open(fpath) as f:
                 data = json.load(f)
@@ -174,7 +194,11 @@ def main():
             failed += 1
 
     print("=" * 60)
-    print(f"Import Complete: ok={success} failed={failed} total={success + failed}")
+    print(f"Import Complete: ok={success} failed={failed} total={success + failed} inputs={inputs_found}")
+    if inputs_found == 0:
+        print("WARNING: zero inputs found under " + HERMES_HOME +
+              " - treating as FAILURE so an empty source can never pass as a sync.")
+        sys.exit(3)
     sys.exit(1 if failed else 0)
 
 
