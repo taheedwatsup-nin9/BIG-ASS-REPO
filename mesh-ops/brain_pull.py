@@ -20,6 +20,17 @@ sb_secret migration job).
 
 Output is a plain-text digest sized for an agent's context window:
 title, source, and content truncated per row (--max-chars).
+
+v1.1 fixes (all three proven by Claude's QA pass on the Lenovo,
+2026-10-21):
+- --search double-encoded its term (quote() + urlencode) and could
+  never match; the term now goes in raw and urlencode encodes once.
+- Ordering was id.desc on a UUID column — effectively random. Now
+  created_at.desc (the one timestamp present on every row; for
+  delete-then-insert sync rows it reads as last-sync time, which is
+  the useful order for a freshest-first digest).
+- --tag filtered client-side AFTER the limit and silently missed
+  rows; it is now a server-side tags contains filter.
 """
 import argparse
 import json
@@ -78,21 +89,19 @@ def main():
               file=sys.stderr)
         sys.exit(2)
 
-    params = {"select": "source,title,content,tags", "order": "id.desc",
+    params = {"select": "source,title,content,tags", "order": "created_at.desc",
               "limit": str(args.limit)}
     if args.source:
         params["source"] = f"eq.{args.source}"
+    if args.tag:
+        params["tags"] = f"cs.{{{args.tag}}}"
     if args.search:
-        q = urllib.parse.quote(f"*{args.search}*")
-        params["or"] = f"(title.ilike.{q},content.ilike.{q})"
+        params["or"] = f"(title.ilike.*{args.search}*,content.ilike.*{args.search}*)"
     endpoint = f"{url}/rest/v1/brain_memory?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(endpoint, headers={
         "apikey": key, "Authorization": f"Bearer {key}"})
     with urllib.request.urlopen(req, timeout=20) as resp:
         rows = json.load(resp)
-
-    if args.tag:
-        rows = [r for r in rows if args.tag in (r.get("tags") or [])]
 
     if not rows:
         print("(brain pull: no rows matched)")
