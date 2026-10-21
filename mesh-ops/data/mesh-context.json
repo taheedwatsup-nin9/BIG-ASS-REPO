@@ -1,0 +1,591 @@
+{
+  "snapshot": "2026-09-17",
+  "header_claim": "125 nodes \u00b7 295 edges \u00b7 local filesystem \u00b7 2026-09-17",
+  "note": "Header claims 125 nodes / 295 edges; the embedded arrays in this snapshot carry fewer (excerpt). Conduit probe figures are from 2026-10-01 Lenovo probes. Partial live re-verification 2026-10-20 (MUZI mesh-ops audit, see mesh-ops/ALERT-LEGEND.md): Google Drive and Supabase were checked live and their service statuses below updated to live; every other figure remains the 2026-09-17 snapshot / 2026-10-01 probes until a full re-scan lands.",
+  "nodes": [
+    {
+      "id": "lenovo",
+      "label": "Lenovo",
+      "kind": "host",
+      "weight": 8
+    },
+    {
+      "id": "zeabur",
+      "label": "CR8MOR Server",
+      "kind": "host",
+      "weight": 7
+    },
+    {
+      "id": "cloud",
+      "label": "Cloud",
+      "kind": "host",
+      "weight": 6
+    },
+    {
+      "id": "brain",
+      "label": "BRAIN",
+      "kind": "folder",
+      "weight": 9
+    },
+    {
+      "id": "skills",
+      "label": "skills",
+      "kind": "folder",
+      "weight": 6
+    },
+    {
+      "id": "workspaces",
+      "label": "Workspaces",
+      "kind": "folder",
+      "weight": 7
+    },
+    {
+      "id": "claude",
+      "label": "Claude",
+      "kind": "service",
+      "weight": 5
+    },
+    {
+      "id": "docker",
+      "label": "Docker",
+      "kind": "service",
+      "weight": 4
+    },
+    {
+      "id": "n8n",
+      "label": "n8n",
+      "kind": "service",
+      "weight": 6
+    },
+    {
+      "id": "ollama",
+      "label": "Ollama",
+      "kind": "service",
+      "weight": 5
+    },
+    {
+      "id": "supabase",
+      "label": "Supabase",
+      "kind": "service",
+      "weight": 5
+    },
+    {
+      "id": "tailscale",
+      "label": "Tailscale",
+      "kind": "service",
+      "weight": 5
+    },
+    {
+      "id": "gcloud",
+      "label": "Google Cloud",
+      "kind": "dead",
+      "weight": 4
+    },
+    {
+      "id": "gdrive",
+      "label": "Google Drive",
+      "kind": "service",
+      "weight": 3
+    },
+    {
+      "id": "gh",
+      "label": "GitHub",
+      "kind": "service",
+      "weight": 4
+    },
+    {
+      "id": "hermes",
+      "label": "Hermes Agent",
+      "kind": "service",
+      "weight": 5
+    },
+    {
+      "id": "aider",
+      "label": "Aider",
+      "kind": "skill",
+      "weight": 3
+    },
+    {
+      "id": "codex",
+      "label": "Codex CLI",
+      "kind": "skill",
+      "weight": 3
+    },
+    {
+      "id": "grok",
+      "label": "Grok CLI",
+      "kind": "dead",
+      "weight": 3
+    },
+    {
+      "id": "gemini",
+      "label": "Gemini",
+      "kind": "skill",
+      "weight": 3
+    },
+    {
+      "id": "rclone",
+      "label": "rclone",
+      "kind": "script",
+      "weight": 4
+    },
+    {
+      "id": "vscode",
+      "label": "VS Code",
+      "kind": "service",
+      "weight": 3
+    },
+    {
+      "id": "python",
+      "label": "Python",
+      "kind": "service",
+      "weight": 3
+    },
+    {
+      "id": "android",
+      "label": "Android Studio",
+      "kind": "dead",
+      "weight": 3
+    },
+    {
+      "id": "cred-gh",
+      "label": "GitHub token",
+      "kind": "cred",
+      "weight": 2
+    },
+    {
+      "id": "cred-sb",
+      "label": "Supabase key",
+      "kind": "cred",
+      "weight": 2
+    },
+    {
+      "id": "cred-ts",
+      "label": "Tailscale auth",
+      "kind": "cred",
+      "weight": 2
+    },
+    {
+      "id": "mcp",
+      "label": "MCP server",
+      "kind": "mcp",
+      "weight": 3
+    },
+    {
+      "id": "figma",
+      "label": "Figma",
+      "kind": "service",
+      "weight": 2
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel",
+      "kind": "service",
+      "weight": 3
+    },
+    {
+      "id": "minio",
+      "label": "MinIO",
+      "kind": "service",
+      "weight": 2
+    },
+    {
+      "id": "notion",
+      "label": "Notion",
+      "kind": "agentdoc",
+      "weight": 2
+    },
+    {
+      "id": "obs",
+      "label": "Obsidian Sync",
+      "kind": "service",
+      "weight": 3
+    },
+    {
+      "id": "skillmd",
+      "label": "SKILL.md sprawl",
+      "kind": "dead",
+      "weight": 4
+    },
+    {
+      "id": "mirror",
+      "label": "Empty mirror",
+      "kind": "dead",
+      "weight": 3
+    },
+    {
+      "id": "wol",
+      "label": "Wake-on-LAN",
+      "kind": "script",
+      "weight": 2
+    }
+  ],
+  "edges": [
+    {
+      "from": "lenovo",
+      "to": "brain"
+    },
+    {
+      "from": "lenovo",
+      "to": "skills"
+    },
+    {
+      "from": "lenovo",
+      "to": "workspaces"
+    },
+    {
+      "from": "lenovo",
+      "to": "claude"
+    },
+    {
+      "from": "lenovo",
+      "to": "vscode"
+    },
+    {
+      "from": "lenovo",
+      "to": "python"
+    },
+    {
+      "from": "lenovo",
+      "to": "aider"
+    },
+    {
+      "from": "lenovo",
+      "to": "rclone"
+    },
+    {
+      "from": "lenovo",
+      "to": "tailscale"
+    },
+    {
+      "from": "lenovo",
+      "to": "cred-gh"
+    },
+    {
+      "from": "lenovo",
+      "to": "wol"
+    },
+    {
+      "from": "brain",
+      "to": "skills"
+    },
+    {
+      "from": "brain",
+      "to": "obs"
+    },
+    {
+      "from": "skills",
+      "to": "skillmd"
+    },
+    {
+      "from": "workspaces",
+      "to": "android"
+    },
+    {
+      "from": "workspaces",
+      "to": "mirror"
+    },
+    {
+      "from": "zeabur",
+      "to": "n8n"
+    },
+    {
+      "from": "zeabur",
+      "to": "hermes"
+    },
+    {
+      "from": "zeabur",
+      "to": "ollama"
+    },
+    {
+      "from": "zeabur",
+      "to": "docker"
+    },
+    {
+      "from": "cloud",
+      "to": "supabase"
+    },
+    {
+      "from": "cloud",
+      "to": "vercel"
+    },
+    {
+      "from": "cloud",
+      "to": "gcloud"
+    },
+    {
+      "from": "cloud",
+      "to": "gdrive"
+    },
+    {
+      "from": "cloud",
+      "to": "gemini"
+    },
+    {
+      "from": "cloud",
+      "to": "grok"
+    },
+    {
+      "from": "n8n",
+      "to": "mcp"
+    },
+    {
+      "from": "hermes",
+      "to": "ollama"
+    },
+    {
+      "from": "supabase",
+      "to": "cred-sb"
+    },
+    {
+      "from": "tailscale",
+      "to": "zeabur"
+    },
+    {
+      "from": "tailscale",
+      "to": "cred-ts"
+    },
+    {
+      "from": "gh",
+      "to": "cred-gh"
+    },
+    {
+      "from": "rclone",
+      "to": "gdrive"
+    },
+    {
+      "from": "claude",
+      "to": "mcp"
+    }
+  ],
+  "services": [
+    {
+      "name": "Claude",
+      "status": "live",
+      "group": "Services"
+    },
+    {
+      "name": "Docker",
+      "status": "down",
+      "group": "Services"
+    },
+    {
+      "name": "n8n",
+      "status": "live",
+      "group": "Services"
+    },
+    {
+      "name": "GitHub",
+      "status": "live",
+      "group": "Services"
+    },
+    {
+      "name": "Google Cloud",
+      "status": "down",
+      "group": "Services"
+    },
+    {
+      "name": "Google Drive",
+      "status": "live",
+      "group": "Services"
+    },
+    {
+      "name": "Supabase",
+      "status": "live",
+      "group": "Services"
+    },
+    {
+      "name": "Tailscale",
+      "status": "live",
+      "group": "Network"
+    },
+    {
+      "name": "Ollama",
+      "status": "live",
+      "group": "AI Tools"
+    },
+    {
+      "name": "Hermes Agent",
+      "status": "live",
+      "group": "AI Tools"
+    },
+    {
+      "name": "Grok CLI",
+      "status": "down",
+      "group": "AI Tools"
+    },
+    {
+      "name": "Aider",
+      "status": "live",
+      "group": "AI Tools"
+    },
+    {
+      "name": "Figma",
+      "status": "idle",
+      "group": "Services"
+    },
+    {
+      "name": "Vercel",
+      "status": "idle",
+      "group": "Services"
+    },
+    {
+      "name": "Chrome Remote Desktop",
+      "status": "down",
+      "group": "Network"
+    },
+    {
+      "name": "Squarespace",
+      "status": "idle",
+      "group": "Apps"
+    }
+  ],
+  "conduit": [
+    {
+      "value": "119",
+      "label": "Assets"
+    },
+    {
+      "value": "175",
+      "label": "Links"
+    },
+    {
+      "value": "45",
+      "label": "Live"
+    },
+    {
+      "value": "1",
+      "label": "Degraded"
+    },
+    {
+      "value": "27",
+      "label": "Down"
+    },
+    {
+      "value": "46",
+      "label": "Not probed"
+    },
+    {
+      "value": "22",
+      "label": "Lenovo + Cloud"
+    },
+    {
+      "value": "16",
+      "label": "Lenovo exclusive"
+    },
+    {
+      "value": "15",
+      "label": "Cloud exclusive"
+    },
+    {
+      "value": "1",
+      "label": "Absent"
+    }
+  ],
+  "punch_list": [
+    {
+      "title": "Stale snapshot",
+      "detail": "Baked 2026-09-17. Database copy is older (2026-09-12). Page ignores it until a newer scan lands.",
+      "tag": "STALE"
+    },
+    {
+      "title": "Root blocker \u2014 gcloud SDK gone",
+      "detail": "~/google-cloud-sdk deleted. Billing disabled on gen-lang-client. Orphan load balancer has no local footprint.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "Lost with talinux",
+      "detail": "audiowatermark not on Lenovo or any mirror. Android Studio bundle may be mis-captured in Workspaces.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "BRAIN inside BRAIN",
+      "detail": "195 of 202 files also in the parent vault. Divergent snapshot, not a dupe. No action.",
+      "tag": "LEAVE"
+    },
+    {
+      "title": "Empty mirror skeleton",
+      "detail": "21,698 directories, zero files.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "Workspaces cr8mor duplication",
+      "detail": "6,521 of 6,557 files identical to Workspaces/cr8mor.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "Two rclone mounts",
+      "detail": "rclone-drive and rclone-gdrive both defined. Only rclone-drive enabled.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "SKILL.md sprawl",
+      "detail": "488 SKILL.md files. About ten are real.",
+      "tag": "OPEN"
+    },
+    {
+      "title": "No agent connected",
+      "detail": "Requests queue. Nothing on the Lenovo is draining them.",
+      "tag": "OPEN"
+    }
+  ],
+  "workload_routes": [
+    {
+      "route": "Route to Lenovo",
+      "items": [
+        "Interactive UI",
+        "Audio fingerprinting and watermarking",
+        "Desktop automation",
+        "Local file and vault ops"
+      ]
+    },
+    {
+      "route": "Route to Cloud",
+      "items": [
+        "Public web and APIs",
+        "Supabase",
+        "n8n on Zeabur",
+        "Hermes / Ollama inference",
+        "Cost monitoring"
+      ]
+    }
+  ],
+  "spend": {
+    "figures": [
+      {
+        "value": "$84.98",
+        "label": "monthly \u00b7 6 subscriptions"
+      },
+      {
+        "value": "$1,019.76",
+        "label": "annualized"
+      }
+    ],
+    "services": [
+      {
+        "service": "Squarespace",
+        "tier": "Business Plan"
+      },
+      {
+        "service": "Claude Pro",
+        "tier": "200k context"
+      },
+      {
+        "service": "Google Drive / Cloud",
+        "tier": "2TB + Gemini Pro"
+      },
+      {
+        "service": "Canva Pro",
+        "tier": "Design assets"
+      },
+      {
+        "service": "Zeabur",
+        "tier": "Credits \u2014 confirm dedicated server"
+      },
+      {
+        "service": "Obsidian Sync",
+        "tier": "Vault sync"
+      }
+    ]
+  }
+}
