@@ -1,0 +1,16 @@
+[Unit]
+Description=Claude Always Open — watchdog keeping the Claude remote-control lane up across reboots
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/share/claude-always-open/claude_always_open.py
+Restart=always
+RestartSec=10
+# No credentials in this unit. The service runs as the user, where Claude
+# Code already holds its own sign-in. Nothing here listens on any network
+# interface — the watchdog opens no sockets.
+
+[Install]
+WantedBy=default.target
