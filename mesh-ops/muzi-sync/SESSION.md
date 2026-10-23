@@ -28,4 +28,4 @@ One shared list of what we have AGREED. Rules:
 | 12 | Security-review plugin re-auth (401) **[T]** | Taheed | Claude | BLOCKED | manual secret scan clean |
 | 13 | n8n: paste 3 new Telegram tokens in UI, then bot tests **[T]** | Taheed → Claude tests | MUZI | BLOCKED: UI paste | getMe 3/3 OK |
 | 14 | Run-sheet bridge in n8n: 2 webhooks (read Runs rows / write status cols J-L + untick Deploy only) using the existing n8n "Google Service Account" credential; Lenovo daemon polls outbound every 5 s | Claude | MUZI | AGREED (revised 23:27: run.sh sha256 gate + 10 s ramp + timeout stimulus+ramp+30 s + hard mute) — DOING | Sheet created (new file, no infra change): CR8 Experiment Runs 1hk7At3JUl-YtuS_G_piuqTzTqpI_tev5G-_mkPqs9Jw |
-\n| 15 | Study: AI Second Brain (Saraev + Ray Fu videos) vs BRAIN | MUZI | Claude | PROOF PENDING (MUZI to push learn-video-*.md) | verdicts proposed 23:32 |\n
+| 15 | Study: AI Second Brain (Saraev + Ray Fu videos) vs BRAIN | MUZI | Claude | PROOF PENDING (MUZI to push learn-video-*.md) | verdicts proposed 23:32 |
