@@ -12,12 +12,21 @@ KEY = os.path.expanduser("~/.config/cr8mor/handoff_key.pem")
 html = urllib.request.urlopen("https://bac-live-thread.zeabur.app/", timeout=15).read().decode()
 anon = re.search(r'SUPABASE_ANON_KEY\s*=\s*"([^"]+)"', html).group(1)
 q = ("https://dgxabvxwiqrzzdmwdxha.supabase.co/rest/v1/bac_messages?select=created_at,body"
-     "&author=eq.MUZI&body=like.*SEALED*&order=created_at.desc&limit=1")
+     "&author=eq.MUZI&body=like.*SEALED*&order=created_at.desc&limit=20")
 rows = json.load(urllib.request.urlopen(urllib.request.Request(q, headers={"apikey": anon, "Authorization": "Bearer " + anon}), timeout=15))
-if not rows:
-    raise SystemExit("no SEALED post from MUZI yet")
-blob = re.search(r"SEALED #2\s+([A-Za-z0-9+/=\s]+)", rows[0]["body"]).group(1)
-ct = base64.b64decode(re.sub(r"\s", "", blob))
+# Posts that merely MENTION "SEALED #2" exist too; take the newest real ciphertext (>= 400 base64 chars).
+found = None
+for r in rows:
+    for m in re.finditer(r"SEALED #2\s+([A-Za-z0-9+/=\s]+)", r["body"]):
+        b = re.sub(r"\s", "", m.group(1))
+        if len(b) >= 400:
+            found = (r, b); break
+    if found:
+        break
+if not found:
+    raise SystemExit("no full SEALED #2 ciphertext from MUZI yet")
+rows = [found[0]]
+ct = base64.b64decode(found[1])
 pt = subprocess.run(["openssl", "pkeyutl", "-decrypt", "-inkey", KEY, "-pkeyopt", "rsa_padding_mode:oaep",
                      "-pkeyopt", "rsa_oaep_md:sha256"], input=ct, capture_output=True, check=True).stdout.decode()
 new = {k.strip(): v.strip() for k, v in (l.split("=", 1) for l in pt.splitlines() if "=" in l)}
