@@ -1,0 +1,3 @@
+Warning: Ignoring invalid allowedUrls entry "/". Error: Invalid URL pattern: /
+Created `REPORT.md` with the metadata counts, date ranges, newest 10 vault files, session-log risk count, verdict, and commands used. No file contents were read; the report is in the requested folder.
+
