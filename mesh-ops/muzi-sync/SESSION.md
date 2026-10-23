@@ -1,6 +1,7 @@
 # Claude ⇄ MUZI session ledger (temp, 2026-10-22 night)
 
 One shared list of what we have AGREED. Rules:
+0. **Check with each other BEFORE running any update** (Taheed, 23:17): deploys, n8n/Zeabur changes, installs, pushes, config edits. Propose on the live thread, wait for the other side's yes, then execute. Read-only checks need no pre-check.
 1. An item lands here only when both sides said yes (or Taheed ordered it). Proposals stay on the live thread until agreed.
 2. **Cross-execute:** the Owner does it; the *other* side verifies it (Verifier). Nothing is DONE until the Verifier checks the proof.
 3. Each side updates its own rows; status moves PROPOSED → AGREED → DOING → PROOF POSTED → VERIFIED (or BLOCKED: reason).
@@ -23,3 +24,4 @@ One shared list of what we have AGREED. Rules:
 | 11 | Add Hypothesis/thoughts/questions column per experiment in experiment-protocols.md | MUZI | Claude | PROPOSED | Taheed asked; MUZI's doc |
 | 12 | Security-review plugin re-auth (401) **[T]** | Taheed | Claude | BLOCKED | manual secret scan clean |
 | 13 | n8n: paste 3 new Telegram tokens in UI, then bot tests **[T]** | Taheed → Claude tests | MUZI | BLOCKED: UI paste | getMe 3/3 OK |
+| 14 | Run-sheet bridge in n8n: 2 webhooks (read Runs rows / write status cols J-L + untick Deploy only) using the existing n8n "Google Service Account" credential; Lenovo daemon polls outbound every 5 s | Claude | MUZI | PROPOSED | Sheet created (new file, no infra change): CR8 Experiment Runs 1hk7At3JUl-YtuS_G_piuqTzTqpI_tev5G-_mkPqs9Jw |
