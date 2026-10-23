@@ -1,0 +1,5 @@
+Warning: Ignoring invalid allowedUrls entry "/". Error: Invalid URL pattern: /
+I’ll add the draft script, concise user-timer instructions, and a report in this folder only; I will not run or install the watchdog.
+
+Created `freshness_watchdog.py`, `WATCHDOG_NOTES.md`, and `REPORT.md` in this folder. The script is report-only; I did not run or install it.
+

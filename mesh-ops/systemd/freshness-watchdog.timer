@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily brain freshness watchdog (06:00, after the 23:45/00:00 syncs)
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

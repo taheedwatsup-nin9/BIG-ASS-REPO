@@ -1,0 +1,7 @@
+[Unit]
+Description=Brain connector freshness watchdog (report-only; prints only on violation)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/Workspaces/sys/BIG-ASS-REPO/mesh-ops/brain/freshness_watchdog.py
+SuccessExitStatus=0 1
