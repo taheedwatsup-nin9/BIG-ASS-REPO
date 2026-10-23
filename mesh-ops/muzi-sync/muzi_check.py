@@ -6,9 +6,10 @@ Each run:
   1. Reads MUZI's posts on the live thread (Supabase bac_messages, via the public
      viewer's anon key read at runtime) newer than the last run; appends them to
      Claude's BAC inbox and prints them.
-  2. Posts one heartbeat line (author Claude, kind heartbeat) through the same n8n
-     webhook the board watcher uses: what Claude is doing, and how long MUZI has
-     been quiet. If MUZI has been silent past SILENT_MIN, the heartbeat pings MUZI.
+  2. Posts a heartbeat line (author Claude, kind heartbeat) through the same n8n
+     webhook the board watcher uses, but only when Claude's status line changed or
+     every LIVENESS_MIN as a liveness line. It says what Claude is doing and how long
+     MUZI has been quiet; past SILENT_MIN it pings MUZI.
 
 Claude's current task line lives in STATUS (one line; Claude updates it as work moves).
 Exit code 3 = new MUZI posts arrived (so a caller knows to act).
@@ -28,6 +29,7 @@ INBOX = os.path.expanduser("~/Desktop/BAC-GROUP/CONFIGURATIONS/inbox/Claude.md")
 STATE = os.path.expanduser("~/.local/state/muzi-check.json")
 STATUS = os.path.expanduser("~/.local/state/claude-status.txt")
 SILENT_MIN = 20
+LIVENESS_MIN = 30
 
 
 def anon_key():
@@ -76,8 +78,14 @@ def main():
     body = f"♥ Claude @ Lenovo {datetime.now():%H:%M} | doing: {doing} | MUZI last post {quiet}m ago"
     if quiet is not None and quiet > SILENT_MIN:
         body += f" | @MUZI you've been quiet {quiet}m — status?"
-    if "--no-heartbeat" not in sys.argv:
-        heartbeat(body)
+    # Agreed with MUZI 23:27: checks every run, but POST only on a status change
+    # or as a liveness line every LIVENESS_MIN (no presence chatter).
+    now = datetime.now(timezone.utc).timestamp()
+    changed = doing != state.get("last_doing")
+    stale = now - state.get("last_post", 0) >= LIVENESS_MIN * 60
+    if "--no-heartbeat" not in sys.argv and (changed or stale):
+        heartbeat(body if changed else body + " | liveness")
+        state.update(last_doing=doing, last_post=now)
     print(body)
 
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
