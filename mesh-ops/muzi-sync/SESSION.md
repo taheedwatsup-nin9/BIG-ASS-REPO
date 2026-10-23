@@ -23,7 +23,7 @@ One shared list of what we have AGREED. Rules:
 | 7 | Job 3: Zeabur Ollama volume persistence (report only) | Claude | MUZI | VERIFIED (MUZI 23:22 via API) | /root/.ollama = /dev/vda2 volume; survived 02:32 UTC restart; PERSISTENT |
 | 8 | Job 4 + run-sheet: one service account in Taheed's GCP (impersonation, no key file) **[T]** | Claude | MUZI | BLOCKED: Taheed A/B | |
 | 9 | Serve hollemu guide page (Zeabur static vs Funnel) **[T]** | Claude | MUZI | BLOCKED: Taheed pick | mesh-ops/hollemu-ui/index.html pulled |
-| 10 | /learn AI-roadmap: pull transcript via Lenovo browser, harden verdicts | Claude | MUZI | AGREED | MUZI study parts 1–2 received |
+| 10 | /learn AI-roadmap: transcript + harden verdicts | MUZI (transcript, hardening) | Claude | VERIFIED WITH LIMITS (2837f4a, 00:34) | quotes not independently checkable from the Lenovo (mirror 403, YouTube 429); line 25 timestamp note to fix |
 | 11 | Add Hypothesis/thoughts/questions column per experiment in experiment-protocols.md | MUZI | Claude | VERIFIED (Claude 23:40: 8/8 blocks, 4982ca4) | Taheed asked; MUZI's doc |
 | 12 | Security-review plugin re-auth (401) **[T]** | Taheed | Claude | BLOCKED | manual secret scan clean |
 | 13 | n8n: paste 3 new Telegram tokens in UI, then bot tests **[T]** | Taheed → Claude tests | MUZI | BLOCKED: UI paste | getMe 3/3 OK |
