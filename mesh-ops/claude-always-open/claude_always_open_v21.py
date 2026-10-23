@@ -15,7 +15,7 @@ alert contract:
     state: up | down | needs-login,  session_url (environment URL),
     last_session_url, unit_active_since, boot_ts, ts, detail
   Boot alert: same env file + payload as v2 (MUZI_BRIDGE_URL/SECRET in
-  ~/.config/cr8mor/env); skipped and noted if absent. No credentials here.
+  ~/.config/cr8mor/.env, legacy ~/.config/cr8mor/env); skipped and noted if absent. No credentials here.
 """
 
 import json
@@ -28,7 +28,8 @@ import urllib.request
 HOME = os.path.expanduser("~")
 STATE_DIR = os.path.join(HOME, ".local", "state", "claude-always-open")
 STATUS_FILE = os.path.join(STATE_DIR, "status.json")
-ENV_FILE = os.path.join(HOME, ".config", "cr8mor", "env")
+# Taheed 2026-10-23: the env file is ~/.config/cr8mor/.env; the old "env" name is kept as a fallback.
+ENV_FILES = [os.path.join(HOME, ".config", "cr8mor", ".env"), os.path.join(HOME, ".config", "cr8mor", "env")]
 UNIT = os.environ.get("CLAUDE_RC_UNIT", "claude-remote-control.service")
 ENV_URL_RE = re.compile(r"https://claude\.ai/code\?environment=env_[A-Za-z0-9]+")
 SESSION_RE = re.compile(r"https://claude\.ai/code/session_[A-Za-z0-9]+")
@@ -56,15 +57,18 @@ def sh(*args):
 
 def load_env():
     env = {}
-    try:
-        with open(ENV_FILE) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, v = line.split("=", 1)
-                    env[k.strip()] = v.strip().strip('"').strip("'")
-    except FileNotFoundError:
-        pass
+    for path in reversed(ENV_FILES):          # .env wins over the legacy name
+        try:
+            with open(path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        v = v.strip().strip('"').strip("'")
+                        if v:
+                            env[k.strip()] = v
+        except FileNotFoundError:
+            pass
     return env
 
 
