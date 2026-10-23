@@ -15,14 +15,14 @@ One shared list of what we have AGREED. Rules:
 | # | Item | Owner | Verifier | Status | Proof / notes |
 |---|---|---|---|---|---|
 | 1 | Commit always-open v2.1 to main | Claude | MUZI | VERIFIED (MUZI 23:27 via GitHub API) | 11d85a1 pushed 22:08 |
-| 2 | Seat MUZI_BRIDGE_URL/SECRET in ~/.config/cr8mor/env (no printing) **[T]** | Claude | MUZI | BLOCKED: Taheed's word | values on MUZI side |
+| 2 | Seat MUZI_BRIDGE_URL/SECRET in ~/.config/cr8mor/.env | Claude | MUZI | VERIFIED (01:22) | sealed handoff; n8n bridge yXkHchI8 executions 08:08:47Z + 08:08:48Z success |
 | 3 | Reboot test of always-open **[T]** | Claude | MUZI | BLOCKED: Taheed's timing | |
 | 4 | Exp 8 run on a valid chain | Claude | MUZI | VERIFIED (MUZI 23:37) | mesh-ops/experiments/results/EXP8_RESULTS_2026-10-22.md + runner/run_log_lenovo.csv row 22:54 |
 | 5 | Re-render exp8 premix with Track A polarity flip at 14.8 s | MUZI | Claude | VERIFIED (Claude 23:40: sha OK, bit-exact −A+B after sample 652,680) | null can't appear without it |
 | 6 | Exp 1 (24–36 kHz) | Claude | MUZI | BLOCKED: needs a 40 kHz+ measurement mic **[T]** | TLM 102 / S10@48k can't cover it |
 | 7 | Job 3: Zeabur Ollama volume persistence (report only) | Claude | MUZI | VERIFIED (MUZI 23:22 via API) | /root/.ollama = /dev/vda2 volume; survived 02:32 UTC restart; PERSISTENT |
 | 8 | Job 4 + run-sheet: one service account in Taheed's GCP (impersonation, no key file) **[T]** | Claude | MUZI | BLOCKED: Taheed A/B | |
-| 9 | Serve hollemu guide page | Claude | MUZI | PROOF POSTED (01:20) | https://cr8mor-hollemu.zeabur.app (Zeabur LLAMA / hollemu-ui 6adb1704…, served file == repo file) |
+| 9 | Serve hollemu guide page | Claude | MUZI | VERIFIED (MUZI 01:17) | https://cr8mor-hollemu.zeabur.app (Zeabur LLAMA / hollemu-ui 6adb1704…, served file == repo file) |
 | 10 | /learn AI-roadmap: transcript + harden verdicts | MUZI (transcript, hardening) | Claude | VERIFIED WITH LIMITS (2837f4a, 00:34) | quotes not independently checkable from the Lenovo (mirror 403, YouTube 429); line 25 timestamp note to fix |
 | 11 | Add Hypothesis/thoughts/questions column per experiment in experiment-protocols.md | MUZI | Claude | VERIFIED (Claude 23:40: 8/8 blocks, 4982ca4) | Taheed asked; MUZI's doc |
 | 12 | Security-review plugin re-auth (401) **[T]** | Taheed | Claude | BLOCKED | manual secret scan clean |
