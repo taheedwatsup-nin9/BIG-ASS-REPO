@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CR8MOR Mesh</title>
+<style>
+  :root {
+    --bg0: #070910;
+    --bg1: #10162a;
+    --ink: #e8eefc;
+    --muted: #93a0bd;
+    --line: rgba(255,255,255,.12);
+    --glass: rgba(16, 22, 40, .55);
+    --glass2: rgba(255,255,255,.06);
+    --amber: #f0b429;
+    --cyan: #5ee7ff;
+    --violet: #b48cff;
+    --green: #3ee0a0;
+    --red: #ff5d73;
+    --yellow: #f6d36b;
+    --blue: #7aa7ff;
+    --shadow: 0 20px 60px rgba(0,0,0,.35);
+    --radius: 22px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(180,140,255,.28), transparent 60%),
+      radial-gradient(800px 520px at 110% 8%, rgba(94,231,255,.18), transparent 55%),
+      radial-gradient(700px 480px at 70% 110%, rgba(240,180,41,.12), transparent 50%),
+      linear-gradient(165deg, var(--bg0), var(--bg1) 55%, #0b1020);
+    min-height: 100%;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 20%, transparent 75%);
+  }
+  .app { max-width: 1180px; margin: 0 auto; padding: 18px 16px 48px; }
+  header.top {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mark {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: linear-gradient(145deg, rgba(94,231,255,.35), rgba(180,140,255,.25));
+    border: 1px solid var(--line);
+    display: grid; place-items: center; font-weight: 700; letter-spacing: .04em;
+  }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
+  .sub { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .live {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 999px;
+    background: rgba(240,180,41,.1); border: 1px solid rgba(240,180,41,.35);
+    color: var(--amber); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+    box-shadow: 0 0 0 0 rgba(240,180,41,.7);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    70% { box-shadow: 0 0 0 8px rgba(240,180,41,0); }
+    100% { box-shadow: 0 0 0 0 rgba(240,180,41,0); }
+  }
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .head-bay {
+    display: grid; grid-template-columns: 280px 1fr; gap: 16px;
+    padding: 14px; margin-bottom: 14px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .head-bay canvas { width: 280px; height: 280px; display: block; border-radius: 50%; }
+  .eyebrow { color: var(--cyan); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  .head-bay h2 { margin: 6px 0 8px; font-size: 22px; font-weight: 600; }
+  .head-bay p { margin: 0; color: var(--muted); line-height: 1.45; max-width: 62ch; }
+  .chiprow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--glass2);
+    color: var(--ink); border-radius: 999px; padding: 6px 10px; font-size: 12px;
+  }
+  .layout { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; }
+  .stack { display: grid; gap: 14px; align-content: start; }
+  .panel { padding: 14px 14px 16px; }
+  .panel h3 { margin: 0 0 6px; font-size: 16px; }
+  .kicker { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .mesh-wrap { position: relative; }
+  canvas#mesh { width: 100%; height: 420px; display: block; border-radius: 16px; background: rgba(0,0,0,.25); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  button, .seg {
+    border: 1px solid var(--line); background: rgba(255,255,255,.05);
+    color: var(--ink); border-radius: 999px; padding: 7px 12px; font: inherit; cursor: pointer;
+  }
+  button.on, .seg.on { background: rgba(94,231,255,.16); border-color: rgba(94,231,255,.45); color: white; }
+  .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label.sl { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--cyan); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .legend button { display: flex; align-items: center; gap: 6px; }
+  .sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .punch { border-left: 3px solid var(--amber); }
+  .issue {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px;
+    padding: 10px 0; border-top: 1px solid var(--line);
+  }
+  .issue:first-of-type { border-top: 0; }
+  .issue strong { display: block; }
+  .issue span { color: var(--muted); font-size: 13px; }
+  .tag { font-size: 11px; letter-spacing: .06em; border-radius: 999px; padding: 3px 8px; border: 1px solid; height: fit-content; }
+  .tag.open { color: var(--red); border-color: rgba(255,93,115,.45); }
+  .tag.stale { color: var(--amber); border-color: rgba(240,180,41,.45); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { padding: 12px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+  .stat b { display: block; font-size: 26px; }
+  .stat em { font-style: normal; color: var(--muted); font-size: 12px; }
+  .money { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 12px; }
+  .money b { font-size: 28px; }
+  .money small { color: var(--muted); display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: .08em; }
+  td, th { padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  .pill { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .routes { display: grid; gap: 8px; }
+  .route { padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+  .route h4 { margin: 0 0 6px; font-size: 14px; }
+  .route ul { margin: 0; padding-left: 16px; color: var(--muted); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .node-card { margin-top: 10px; padding: 10px; border-radius: 14px; background: rgba(0,0,0,.25); border: 1px solid var(--line); min-height: 72px; }
+  .node-card strong { display: block; }
+  .node-card span { color: var(--muted); font-size: 13px; }
+  footer.note { color: var(--muted); font-size: 12px; margin-top: 16px; }
+  .wake {
+    border-color: rgba(94,231,255,.5); background: rgba(94,231,255,.12);
+    font-weight: 600; letter-spacing: .06em; font-size: 13px;
+    transition: box-shadow .3s, background .3s;
+    text-decoration: none; display: inline-block;
+  }
+  .wake.awake { background: rgba(94,231,255,.28); box-shadow: 0 0 22px rgba(94,231,255,.45); color: #fff; }
+  .muzi-line { margin-top: 10px; min-height: 20px; color: var(--cyan); font-family: ui-monospace, monospace; font-size: 13px; }
+  #headBay.awake { border-color: rgba(94,231,255,.55); box-shadow: 0 0 46px rgba(94,231,255,.22), var(--shadow); }
+  .console { margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.35); overflow: hidden; }
+  .cout { max-height: 150px; overflow-y: auto; padding: 10px 12px; font-family: ui-monospace, monospace; font-size: 12.5px; line-height: 1.55; }
+  .cout .prompt { color: var(--cyan); }
+  .cout .ok { color: var(--green); }
+  .cout .err { color: var(--red); }
+  .cin { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); }
+  .cin .prompt { color: var(--cyan); font-family: ui-monospace, monospace; font-size: 13px; }
+  .cin input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--ink); font-family: ui-monospace, monospace; font-size: 13px; }
+  @media (max-width: 860px) {
+    .layout, .head-bay, .sliders { grid-template-columns: 1fr; }
+    .head-bay canvas { margin: 0 auto; }
+    canvas#mesh { height: 320px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">C8</div>
+      <div>
+        <h1>CR8MOR Mesh</h1>
+        <div class="sub">125 nodes · 295 edges · local filesystem · 2026-09-17</div>
+      </div>
+    </div>
+    <div class="live"><span class="dot"></span> snapshot · amber</div>
+  </header>
+
+  <section class="glass head-bay" id="headBay">
+    <canvas id="holo" width="560" height="560" aria-label="Matrix shell of the command head"></canvas>
+    <div>
+      <div class="eyebrow">Command bay · exterior only</div>
+      <h2>Projection, not a portrait.</h2>
+      <p>Translucent shell, scanlines, flicker, matrix only on the bright edges. You can see the room through it. Voice still off.</p>
+      <div class="chiprow">
+        <span class="chip">119 assets</span>
+        <span class="chip">45 live</span>
+        <span class="chip">1 degraded</span>
+        <span class="chip">27 down</span>
+        <span class="chip">scan 19 days stale</span>
+      </div>
+      <div class="chiprow" style="margin-top:10px">
+        <a id="wakeBtn" class="wake" href="https://muse.ai" target="_blank" rel="noopener">◉ Talk to MUZI</a>
+      </div>
+      <div id="muziLine" class="muzi-line" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div class="stack">
+      <section class="glass panel punch">
+        <h3>Punch list</h3>
+        <div class="kicker">The useful part. Plain text. Nothing here executes until an agent on the Lenovo drains the queue.</div>
+        <div class="issue"><div><strong>Stale snapshot</strong><span>Baked 2026-09-17. Database copy is older (2026-09-12). Page ignores it until a newer scan lands.</span></div><span class="tag stale">STALE</span></div>
+        <div class="issue"><div><strong>Root blocker — gcloud SDK gone</strong><span>~/google-cloud-sdk deleted. Billing disabled on gen-lang-client. Orphan load balancer has no local footprint.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>Lost with talinux</strong><span>audiowatermark not on Lenovo or any mirror. Android Studio bundle may be mis-captured in Workspaces.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>BRAIN inside BRAIN</strong><span>195 of 202 files also in the parent vault. Divergent snapshot, not a dupe. No action.</span></div><span class="tag stale">LEAVE</span></div>
+        <div class="issue"><div><strong>Empty mirror skeleton</strong><span>21,698 directories, zero files.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>Workspaces cr8mor duplication</strong><span>6,521 of 6,557 files identical to Workspaces/cr8mor.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>Two rclone mounts</strong><span>rclone-drive and rclone-gdrive both defined. Only rclone-drive enabled.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>SKILL.md sprawl</strong><span>488 SKILL.md files. About ten are real.</span></div><span class="tag open">OPEN</span></div>
+        <div class="issue"><div><strong>No agent connected</strong><span>Requests queue. Nothing on the Lenovo is draining them.</span></div><span class="tag open">OPEN</span></div>
+      </section>
+
+      <section class="glass panel mesh-wrap">
+        <h3>Mesh</h3>
+        <div class="kicker">Drag to orbit. Click a dot. Unrelated links dim. Folders are nodes; files live inside them. Credentials stay sealed.</div>
+        <div class="controls" id="modes">
+          <button class="on" data-mode="filesystem">Filesystem</button>
+          <button data-mode="rings">Rings</button>
+          <button data-mode="space">Deep Space</button>
+          <button id="pauseBtn">Pause</button>
+        </div>
+        <canvas id="mesh" width="900" height="700"></canvas>
+        <div class="sliders">
+          <label class="sl">Density <input id="density" type="range" min="40" max="160" value="100" /></label>
+          <label class="sl">Padding <input id="padding" type="range" min="60" max="180" value="110" /></label>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="node-card" id="focus">Click a node. Sealed credentials show purpose, never a value.</div>
+        <div class="console">
+          <div id="cout" class="cout"><div><span class="prompt">muzi&gt;</span> console online. type <b>help</b>.</div></div>
+          <div class="cin"><span class="prompt">muzi&gt;</span><input id="cin" type="text" placeholder="focus lenovo · mode rings · filter down · help" autocomplete="off" spellcheck="false" /></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="glass panel">
+        <h3>Conduit</h3>
+        <div class="kicker">Status from the 2026-10-01 Lenovo probes. Not a live socket.</div>
+        <div class="stats">
+          <div class="stat"><b>119</b><em>Assets</em></div>
+          <div class="stat"><b>175</b><em>Links</em></div>
+          <div class="stat"><b style="color:var(--green)">45</b><em>Live</em></div>
+          <div class="stat"><b style="color:var(--amber)">1</b><em>Degraded</em></div>
+          <div class="stat"><b style="color:var(--red)">27</b><em>Down</em></div>
+          <div class="stat"><b>46</b><em>Not probed</em></div>
+        </div>
+        <div class="filters" id="statusFilters" style="margin-top:10px"></div>
+        <div id="svc"></div>
+      </section>
+
+      <section class="glass panel">
+        <h3>Workload routing</h3>
+        <div class="kicker">Zeabur carries n8n and Hermes. Lenovo keeps the hands-on work.</div>
+        <div class="routes">
+          <div class="route"><h4>Route to Lenovo</h4><ul><li>Interactive UI</li><li>Audio fingerprinting and watermarking</li><li>Desktop automation</li><li>Local file and vault ops</li></ul></div>
+          <div class="route"><h4>Route to Cloud</h4><ul><li>Public web and APIs</li><li>Supabase</li><li>n8n on Zeabur</li><li>Hermes / Ollama inference</li><li>Cost monitoring</li></ul></div>
+        </div>
+      </section>
+
+      <section class="glass panel">
+        <h3>Scope</h3>
+        <div class="stats">
+          <div class="stat"><b style="color:var(--blue)">22</b><em>Lenovo + Cloud</em></div>
+          <div class="stat"><b style="color:var(--amber)">16</b><em>Lenovo exclusive</em></div>
+          <div class="stat"><b style="color:var(--violet)">15</b><em>Cloud exclusive</em></div>
+          <div class="stat"><b style="color:var(--red)">1</b><em>Absent</em></div>
+        </div>
+      </section>
+
+      <section class="glass panel">
+        <h3>Recurring spend</h3>
+        <div class="kicker">2026-09-10 scan. GCP and Zeabur rechecked 2026-10-01.</div>
+        <div class="money"><div><b>$84.98</b><small>monthly · 6 subscriptions</small></div><div><b>$1,019.76</b><small>annualized</small></div></div>
+        <table>
+          <tr><th>Service</th><th>Tier</th></tr>
+          <tr><td>Squarespace</td><td>Business Plan</td></tr>
+          <tr><td>Claude Pro</td><td>200k context</td></tr>
+          <tr><td>Google Drive / Cloud</td><td>2TB + Gemini Pro</td></tr>
+          <tr><td>Canva Pro</td><td>Design assets</td></tr>
+          <tr><td>Zeabur</td><td>Credits — confirm dedicated server</td></tr>
+          <tr><td>Obsidian Sync</td><td>Vault sync</td></tr>
+        </table>
+        <p class="kicker" style="margin-top:10px">GCP billing disabled on gen-lang-client. Orphan load balancer, Cloud SQL, and Cloud Run should not accrue. Zeabur $5 line is the old credits plan.</p>
+      </section>
+    </div>
+  </div>
+  <footer class="note">Static rebuild of the 2026-09-17 mesh. Credentials are presence-only. Head bay is the outer shell only — matrix data, no voice yet.</footer>
+</div>
+<script>
+const KINDS = {
+  service: "#5ee7ff", script: "#f6d36b", skill: "#b48cff", agentdoc: "#ff7ab6",
+  folder: "#d7deee", mcp: "#7aa7ff", config: "#8d9bb8", host: "#9ad7ff",
+  manifest: "#3ee0a0", dead: "#ff5d73", cred: "#f0b429"
+};
+const NODES = [
+  ["lenovo","Lenovo","host",8],["zeabur","CR8MOR Server","host",7],["cloud","Cloud","host",6],
+  ["brain","BRAIN","folder",9],["skills","skills","folder",6],["workspaces","Workspaces","folder",7],
+  ["claude","Claude","service",5],["docker","Docker","service",4],["n8n","n8n","service",6],
+  ["ollama","Ollama","service",5],["supabase","Supabase","service",5],["tailscale","Tailscale","service",5],
+  ["gcloud","Google Cloud","dead",4],["gdrive","Google Drive","service",3],["gh","GitHub","service",4],
+  ["hermes","Hermes Agent","service",5],["aider","Aider","skill",3],["codex","Codex CLI","skill",3],
+  ["grok","Grok CLI","dead",3],["gemini","Gemini","skill",3],["rclone","rclone","script",4],
+  ["vscode","VS Code","service",3],["python","Python","service",3],["android","Android Studio","dead",3],
+  ["cred-gh","GitHub token","cred",2],["cred-sb","Supabase key","cred",2],["cred-ts","Tailscale auth","cred",2],
+  ["mcp","MCP server","mcp",3],["figma","Figma","service",2],["vercel","Vercel","service",3],
+  ["minio","MinIO","service",2],["notion","Notion","agentdoc",2],["obs","Obsidian Sync","service",3],
+  ["skillmd","SKILL.md sprawl","dead",4],["mirror","Empty mirror","dead",3],["wol","Wake-on-LAN","script",2]
+];
+const EDGES = [["lenovo","brain"],["lenovo","skills"],["lenovo","workspaces"],["lenovo","claude"],["lenovo","vscode"],["lenovo","python"],["lenovo","aider"],["lenovo","rclone"],["lenovo","tailscale"],["lenovo","cred-gh"],["lenovo","wol"],["brain","skills"],["brain","obs"],["skills","skillmd"],["workspaces","android"],["workspaces","mirror"],["zeabur","n8n"],["zeabur","hermes"],["zeabur","ollama"],["zeabur","docker"],["cloud","supabase"],["cloud","vercel"],["cloud","gcloud"],["cloud","gdrive"],["cloud","gemini"],["cloud","grok"],["n8n","mcp"],["hermes","ollama"],["supabase","cred-sb"],["tailscale","zeabur"],["tailscale","cred-ts"],["gh","cred-gh"],["rclone","gdrive"],["claude","mcp"]];
+const SVCS = [
+  ["Claude","live","Services"],["Docker","down","Services"],["n8n","live","Services"],["GitHub","live","Services"],
+  ["Google Cloud","down","Services"],["Google Drive","down","Services"],["Supabase","degraded","Services"],
+  ["Tailscale","live","Network"],["Ollama","live","AI Tools"],["Hermes Agent","live","AI Tools"],
+  ["Grok CLI","down","AI Tools"],["Aider","live","AI Tools"],["Figma","idle","Services"],["Vercel","idle","Services"],
+  ["Chrome Remote Desktop","down","Network"],["Squarespace","idle","Apps"]
+];
+const state = { mode:"filesystem", paused:false, hide:new Set(), status:"all", focus:null, rot:0.4, density:100, pad:110 };
+let awake = false;
+function typeLine(s) {
+  const el = document.getElementById("muziLine");
+  el.textContent = "";
+  let i = 0;
+  const iv = setInterval(() => { el.textContent += s[i++]; if (i >= s.length) clearInterval(iv); }, 26);
+}
+const wakeLink = document.getElementById("wakeBtn");
+wakeLink.addEventListener("click", (e) => {
+  const bay = document.getElementById("headBay");
+  if (awake) {
+    e.preventDefault();
+    awake = false;
+    wakeLink.classList.remove("awake");
+    wakeLink.textContent = "◉ Talk to MUZI";
+    bay.classList.remove("awake");
+    typeLine("Conduit closed. Standing by.");
+  } else {
+    awake = true;
+    wakeLink.classList.add("awake");
+    wakeLink.textContent = "◉ MUZI is awake — tap to stand down";
+    bay.classList.add("awake");
+    typeLine("Conduit open. You're through to MUZI.");
+  }
+});
+
+function project(n, i, t) {
+  const dens = state.density / 100;
+  const pad = state.pad;
+  let x, y, z;
+  if (state.mode === "rings") {
+    const ring = 1 + (i % 4);
+    const a = state.rot + i * 0.7 + t * 0.15;
+    x = Math.cos(a) * ring * pad * dens;
+    z = Math.sin(a) * ring * pad * 0.55 * dens;
+    y = (ring - 2.5) * 36;
+  } else if (state.mode === "space") {
+    const a = state.rot * 0.6 + i;
+    const r = 40 + (i % 7) * 28 * dens;
+    x = Math.cos(a) * r; y = Math.sin(i * 1.7) * 90; z = Math.sin(a) * r;
+  } else {
+    const depth = n[3];
+    const a = state.rot + i * 0.55;
+    x = Math.cos(a) * (30 + depth * 16) * dens;
+    y = ((i % 9) - 4) * 22;
+    z = Math.sin(a) * pad * 0.8 * dens;
+  }
+  const p = 280 / (280 + z);
+  return { x: x * p, y: y * p, s: (4 + n[3]) * p, z };
+}
+
+const mesh = document.getElementById("mesh");
+const mctx = mesh.getContext("2d");
+const holo = document.getElementById("holo");
+const hctx = holo.getContext("2d");
+let drag = null;
+
+function drawMesh(t) {
+  const w = mesh.width, h = mesh.height;
+  mctx.clearRect(0, 0, w, h);
+  const pts = NODES.map((n,i) => ({ n, i, ...project(n, i, t) }));
+  const byId = Object.fromEntries(pts.map(p => [p.n[0], p]));
+  mctx.save();
+  mctx.translate(w/2, h/2);
+  EDGES.forEach(([a,b]) => {
+    const A = byId[a], B = byId[b];
+    if (!A || !B) return;
+    if (state.hide.has(A.n[2]) || state.hide.has(B.n[2])) return;
+    const dim = state.focus && state.focus !== a && state.focus !== b;
+    mctx.strokeStyle = dim ? "rgba(255,255,255,.05)" : "rgba(180,210,255,.28)";
+    mctx.lineWidth = dim ? 1 : 1.4;
+    mctx.beginPath(); mctx.moveTo(A.x, A.y); mctx.lineTo(B.x, B.y); mctx.stroke();
+  });
+  pts.sort((a,b) => a.z - b.z).forEach(p => {
+    if (state.hide.has(p.n[2])) return;
+    const col = KINDS[p.n[2]] || "#fff";
+    const on = !state.focus || state.focus === p.n[0] || EDGES.some(e => e.includes(state.focus) && e.includes(p.n[0]));
+    mctx.globalAlpha = on ? 1 : 0.18;
+    mctx.fillStyle = col;
+    mctx.shadowColor = col;
+    mctx.shadowBlur = p.n[2] === "dead" ? 0 : 12;
+    mctx.beginPath(); mctx.arc(p.x, p.y, Math.max(3, p.s), 0, 7); mctx.fill();
+    if (p.n[2] !== "dead" && p.n[3] > 4) {
+      mctx.strokeStyle = col; mctx.globalAlpha = 0.35 + 0.25 * Math.sin(t*3 + p.i);
+      mctx.beginPath(); mctx.arc(p.x, p.y, p.s + 6, 0, 7); mctx.stroke();
+    }
+    mctx.shadowBlur = 0; mctx.globalAlpha = 1;
+    p.sx = p.x + w/2; p.sy = p.y + h/2;
+  });
+  mctx.restore();
+  mesh._pts = pts;
+}
+
+const GLYPHS = "01ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ";
+const holoImg = new Image();
+let shell = null;
+let ghost = null;
+holoImg.onload = () => {
+  const s = 220;
+  const off = document.createElement("canvas");
+  off.width = s; off.height = s;
+  const o = off.getContext("2d");
+  o.drawImage(holoImg, 150, 30, 780, 780, 0, 0, s, s);
+  ghost = off;
+  const img = o.getImageData(0, 0, s, s).data;
+  const pts = [];
+  for (let y = 2; y < s - 2; y += 2) {
+    for (let x = 2; x < s - 2; x += 2) {
+      const i = (y * s + x) * 4;
+      const g = img[i + 1];
+      const lum = img[i] * 0.15 + g * 0.75 + img[i + 2] * 0.1;
+      const nx = img[((y * s + x + 2) * 4) + 1];
+      const ny = img[(((y + 2) * s + x) * 4) + 1];
+      const edge = Math.abs(g - nx) + Math.abs(g - ny);
+      if (edge > 38 && lum > 36) pts.push([x / s, y / s, Math.min(1, edge / 160)]);
+    }
+  }
+  shell = pts;
+};
+holoImg.src = "holo-ref.jpg";
+
+function drawHead(t) {
+  const w = holo.width, h = holo.height, cx = w / 2, cy = h / 2 + 6;
+  hctx.clearRect(0, 0, w, h);
+  const flicker = (awake ? 0.94 : 0.82) + Math.sin(t * 17) * (awake ? 0.08 : 0.04) + (Math.random() < 0.04 ? -0.12 : 0);
+  hctx.save();
+  hctx.beginPath();
+  hctx.arc(cx, cy, 236, 0, 7);
+  hctx.clip();
+  const room = hctx.createRadialGradient(cx, cy, 40, cx, cy, 250);
+  room.addColorStop(0, "rgba(8,40,18,.55)");
+  room.addColorStop(1, "rgba(0,6,2,.92)");
+  hctx.fillStyle = room;
+  hctx.fillRect(0, 0, w, h);
+  hctx.strokeStyle = "rgba(60,255,120,.08)";
+  hctx.lineWidth = 1;
+  for (let i = -6; i <= 6; i++) {
+    hctx.beginPath();
+    hctx.moveTo(cx + i * 28, cy - 220);
+    hctx.lineTo(cx + i * 46, cy + 230);
+    hctx.stroke();
+    hctx.beginPath();
+    hctx.moveTo(cx - 230, cy + i * 24);
+    hctx.lineTo(cx + 230, cy + i * 36);
+    hctx.stroke();
+  }
+  hctx.globalAlpha = (awake ? 0.42 : 0.22) * flicker;
+  hctx.font = "12px ui-monospace, monospace";
+  for (let col = 0; col < 16; col++) {
+    const seed = (col * 9 + Math.floor(t * 10)) % 28;
+    for (let row = 0; row < 18; row++) {
+      hctx.fillStyle = "rgba(80,255,140,.7)";
+      hctx.fillText(GLYPHS[(col + row + seed) % GLYPHS.length], 24 + col * 34, 18 + ((row * 30 + seed * 7) % 540));
+    }
+  }
+  hctx.globalAlpha = 1;
+  if (ghost) {
+    hctx.save();
+    hctx.globalAlpha = 0.22 * flicker;
+    hctx.filter = "brightness(1.4) saturate(1.6)";
+    hctx.drawImage(ghost, cx - 196, cy - 206, 392, 392);
+    hctx.filter = "none";
+    hctx.globalCompositeOperation = "screen";
+    hctx.globalAlpha = 0.35 * flicker;
+    hctx.drawImage(ghost, cx - 196, cy - 206, 392, 392);
+    hctx.restore();
+  }
+  if (shell) {
+    const scale = 392;
+    hctx.globalCompositeOperation = "lighter";
+    hctx.textAlign = "center";
+    shell.forEach((p, i) => {
+      if ((i + Math.floor(t * 9)) % 2 === 0) return;
+      const x = cx - scale / 2 + p[0] * scale;
+      const y = cy - scale / 2 + p[1] * scale;
+      hctx.globalAlpha = (0.35 + p[2] * 0.65) * flicker;
+      hctx.fillStyle = p[2] > 0.65 ? "#eafff2" : "#5dff9a";
+      hctx.font = (9 + p[2] * 5) + "px ui-monospace, monospace";
+      hctx.fillText(GLYPHS[(i + Math.floor(t * (awake ? 16 : 5))) % GLYPHS.length], x, y);
+    });
+    hctx.globalCompositeOperation = "source-over";
+  }
+  hctx.globalAlpha = 0.18;
+  for (let y = cy - 200; y < cy + 200; y += 4) {
+    hctx.fillStyle = "#04160c";
+    hctx.fillRect(cx - 220, y, 440, 1);
+  }
+  const scan = cy - 200 + ((t * 90) % 400);
+  hctx.globalAlpha = 0.28;
+  hctx.fillStyle = "#b8ffd4";
+  hctx.fillRect(cx - 210, scan, 420, 2);
+  hctx.restore();
+  hctx.beginPath();
+  hctx.arc(cx, cy, 244, 0, 7);
+  hctx.strokeStyle = "rgba(120,255,170,.55)";
+  hctx.lineWidth = 10;
+  hctx.shadowColor = "#39ff74";
+  hctx.shadowBlur = awake ? 44 : 22;
+  hctx.stroke();
+  hctx.shadowBlur = 0;
+  hctx.globalAlpha = 0.35 * flicker;
+  hctx.strokeStyle = "#d8ffe8";
+  hctx.lineWidth = 2;
+  const spin = awake ? t * 3 : t;
+  hctx.beginPath();
+  hctx.arc(cx, cy, 228, spin, spin + 1.4);
+  hctx.stroke();
+  hctx.globalAlpha = 1;
+}
+const legend = document.getElementById("legend");
+Object.entries(KINDS).forEach(([k,c]) => {
+  const b = document.createElement("button");
+  b.dataset.kind = k;
+  b.innerHTML = `<i class="sw" style="background:${c}"></i>${k}`;
+  b.onclick = () => { state.hide.has(k) ? state.hide.delete(k) : state.hide.add(k); b.classList.toggle("on"); };
+  legend.appendChild(b);
+});
+function syncLegend() {
+  [...legend.children].forEach(x => x.classList.toggle("on", state.hide.has(x.dataset.kind)));
+}
+function setMode(m) {
+  const btns = [...document.getElementById("modes").children];
+  const btn = btns.find(x => x.dataset.mode === m);
+  if (!btn) return false;
+  state.mode = m;
+  btns.forEach(x => x.classList.toggle("on", x === btn));
+  return true;
+}
+function setPaused(p) {
+  state.paused = p;
+  const b = document.getElementById("pauseBtn");
+  b.classList.toggle("on", p);
+  b.textContent = p ? "Play" : "Pause";
+}
+document.getElementById("modes").onclick = (e) => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  if (btn.id === "pauseBtn") { setPaused(!state.paused); return; }
+  if (!btn.dataset.mode) return;
+  setMode(btn.dataset.mode);
+};
+document.getElementById("density").oninput = (e) => state.density = +e.target.value;
+document.getElementById("padding").oninput = (e) => state.pad = +e.target.value;
+
+const statusHost = document.getElementById("statusFilters");
+function setSvcFilter(s) {
+  const valid = ["all","live","degraded","down","idle"];
+  if (!valid.includes(s)) return false;
+  state.status = s;
+  [...statusHost.children].forEach(x => x.classList.toggle("on", x.textContent === s));
+  renderSvc();
+  return true;
+}
+["all","live","degraded","down","idle"].forEach(s => {
+  const b = document.createElement("button");
+  b.textContent = s; if (s === "all") b.classList.add("on");
+  b.onclick = () => setSvcFilter(s);
+  statusHost.appendChild(b);
+});
+function renderSvc() {
+  const host = document.getElementById("svc");
+  host.innerHTML = SVCS.filter(s => state.status === "all" || s[1] === state.status).map(s => {
+    const col = s[1] === "live" ? "var(--green)" : s[1] === "down" ? "var(--red)" : s[1] === "degraded" ? "var(--amber)" : "#8d9bb8";
+    return `<div class="issue"><div><strong><i class="pill" style="background:${col}"></i> ${s[0]}</strong><span>${s[2]}</span></div><span class="tag">${s[1]}</span></div>`;
+  }).join("");
+}
+renderSvc();
+
+mesh.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, rot: state.rot }; });
+window.addEventListener("pointerup", () => drag = null);
+window.addEventListener("pointermove", (e) => { if (drag) state.rot = drag.rot + (e.clientX - drag.x) * 0.01; });
+function focusNode(id) {
+  const card = document.getElementById("focus");
+  const hit = NODES.find(n => n[0] === id);
+  if (!hit) return false;
+  state.focus = id;
+  const sealed = hit[2] === "cred" ? " Sealed — presence and purpose only." : "";
+  card.innerHTML = `<strong>${hit[1]}</strong><span>${hit[2]} · weight ${hit[3]}.${sealed}</span>`;
+  return true;
+}
+function unfocusNode() {
+  state.focus = null;
+  document.getElementById("focus").textContent = "Click a node. Sealed credentials show purpose, never a value.";
+}
+mesh.addEventListener("click", (e) => {
+  const r = mesh.getBoundingClientRect();
+  const x = (e.clientX - r.left) * (mesh.width / r.width);
+  const y = (e.clientY - r.top) * (mesh.height / r.height);
+  const hit = (mesh._pts || []).find(p => Math.hypot(p.sx - x, p.sy - y) < 16);
+  if (!hit) { unfocusNode(); return; }
+  focusNode(hit.n[0]);
+});
+
+const cout = document.getElementById("cout");
+const cin = document.getElementById("cin");
+function clog(html, cls) {
+  const d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.innerHTML = html;
+  cout.appendChild(d);
+  cout.scrollTop = cout.scrollHeight;
+}
+function runCmd(raw) {
+  const parts = raw.trim().split(/\s+/);
+  const cmd = (parts[0] || "").toLowerCase();
+  const arg = parts.slice(1).join(" ");
+  clog(`<span class="prompt">muzi&gt;</span> ${raw.replace(/</g, "&lt;")}`);
+  const done = (msg) => clog(msg, "ok");
+  const fail = (msg) => clog(msg, "err");
+  switch (cmd) {
+    case "help":
+      clog("focus &lt;node&gt; · unfocus · mode &lt;filesystem|rings|space&gt; · pause|play · filter &lt;all|live|degraded|down|idle&gt; · hide &lt;kind&gt; · show &lt;kind|all&gt; · wake|sleep · stats · punch · clear");
+      break;
+    case "focus": {
+      if (!arg) { fail("usage: focus &lt;node&gt;"); break; }
+      const n = NODES.find(n => n[0] === arg.toLowerCase() || n[1].toLowerCase().includes(arg.toLowerCase()));
+      if (n && focusNode(n[0])) done(`focused <b>${n[1]}</b>`);
+      else fail(`no node matching "${arg.replace(/</g, "&lt;")}"`);
+      break;
+    }
+    case "unfocus": case "clearfocus":
+      unfocusNode(); done("focus cleared"); break;
+    case "mode": {
+      const ok = setMode(arg.toLowerCase());
+      ok ? done(`mode → ${arg.toLowerCase()}`) : fail(`unknown mode — filesystem|rings|space`);
+      break;
+    }
+    case "pause": setPaused(true); done("paused"); break;
+    case "play": setPaused(false); done("playing"); break;
+    case "filter": {
+      const ok = setSvcFilter(arg.toLowerCase());
+      ok ? done(`services → ${arg.toLowerCase()}`) : fail(`unknown status — all|live|degraded|down|idle`);
+      break;
+    }
+    case "hide": {
+      const k = arg.toLowerCase();
+      if (!KINDS[k]) { fail(`unknown kind "${arg.replace(/</g, "&lt;")}"`); break; }
+      state.hide.add(k); syncLegend(); done(`hid ${k}`);
+      break;
+    }
+    case "show": {
+      const k = arg.toLowerCase();
+      if (k === "all") state.hide.clear();
+      else if (KINDS[k]) state.hide.delete(k);
+      else { fail(`unknown kind "${arg.replace(/</g, "&lt;")}"`); break; }
+      syncLegend(); done("updated");
+      break;
+    }
+    case "wake": awake ? done("already awake") : wakeLink.click(); break;
+    case "sleep": awake ? wakeLink.click() : done("already dormant"); break;
+    case "stats": {
+      const c = (s) => SVCS.filter(x => x[1] === s).length;
+      done(`${NODES.length} nodes · ${EDGES.length} edges · ${SVCS.length} services (${c("live")} live, ${c("down")} down, ${c("degraded")} degraded) · $84.98/mo`);
+      break;
+    }
+    case "punch":
+      clog([...document.querySelectorAll(".punch .issue")].map((el, i) =>
+        `${i + 1}. <b>${el.querySelector("strong").textContent}</b> — ${el.querySelector("span.tag").textContent}`).join("<br>"));
+      break;
+    case "clear": cout.innerHTML = ""; break;
+    case "": break;
+    default: fail(`unknown command "${cmd.replace(/</g, "&lt;")}" — try help`);
+  }
+}
+cin.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && cin.value.trim()) { runCmd(cin.value); cin.value = ""; }
+});
+window.muzi = { cmd: runCmd, state, focusNode };
+const qcmd = new URLSearchParams(location.search).get("cmd");
+if (qcmd) runCmd(qcmd);
+
+function frame(ts) {
+  const t = ts / 1000;
+  if (!state.paused) state.rot += 0.003;
+  drawMesh(t); drawHead(t);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

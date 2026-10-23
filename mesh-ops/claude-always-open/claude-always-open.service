@@ -1,0 +1,16 @@
+[Unit]
+Description=Claude Always Open — daemon that fires off `claude --remote-control` at boot and keeps the Lenovo's Claude session alive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/share/claude-always-open/claude_always_open.py
+Restart=always
+RestartSec=10
+# No credentials in this unit. The daemon runs as the user; the Claude
+# CLI's own subscription sign-in lives on the machine (~/.claude) from
+# Taheed's one interactive login. Nothing here listens on any interface.
+
+[Install]
+WantedBy=default.target
