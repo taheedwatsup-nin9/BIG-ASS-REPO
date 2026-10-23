@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import Lenovo Claude Code session logs into Supabase brain_memory. (v1.1, Claude 2026-10-23)
+"""Import Lenovo Claude Code session logs into Supabase brain_memory. (v2.0, Claude 2026-10-23)
 
 Build order: Taheed 2026-10-23 01:34 "Build them" via MUZI (brain maintenance trio + connector).
 Pattern: mirrors import_hermes_v2.py v2.4.1 — one brain_memory row per session, delete-by-exact-
@@ -18,6 +18,12 @@ Incremental: ~/.local/state/claude-sessions-import.json remembers each log's siz
 grown logs are re-imported. Backfill runs OLDEST FIRST (Taheed/MUZI order).
 Subagent logs (deeper folders) are imported too, tagged "subagent".
 
+v2.0 (agreed MUZI 01:38): output is a MARKDOWN DIGEST per session into the vault raw-sources home
+~/02_Areas/BRAIN/00-Inbox/ClaudeSessions/. The existing nightly obsidian-sync.service
+(obsidian_extractor.py --vault ~/02_Areas/BRAIN) carries the vault into brain_memory, so the vault
+is the store and brain_memory the index: no second pipeline. v1.x wrote rows straight into
+brain_memory; those 5 sample rows were removed.
+
 Usage: import_claude_sessions.py [--dry-run] [--limit N] [--leak-check FILE]
   --leak-check FILE: a file of known-secret strings (one per line, kept outside the repo);
   the run aborts before writing if any of them survives the filter.
@@ -33,6 +39,7 @@ import urllib.request
 from datetime import datetime, timezone
 
 PROJECTS = os.path.expanduser("~/.claude/projects")
+VAULT_DIR = os.path.expanduser("~/02_Areas/BRAIN/00-Inbox/ClaudeSessions")
 STATE = os.path.expanduser("~/.local/state/claude-sessions-import.json")
 DEFAULT_ENV_FILE = os.path.expanduser("~/.config/cr8mor/supabase.env")
 KEY_NAMES = ("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE_KEY", "SUPABASE_KEY")
@@ -148,6 +155,19 @@ def build_row(path):
     return {"source": SOURCE, "title": title[:250], "content": header + body, "tags": tags}, hits
 
 
+def write_digest(row, path):
+    """One markdown file per session log, named by date + log id; overwritten on each run (idempotent)."""
+    os.makedirs(VAULT_DIR, exist_ok=True)
+    m = re.match(r"Claude session (\S+) .*\[([^\]]+)\]$", row["title"])
+    day, lid = (m.group(1), m.group(2)) if m else ("undated", os.path.basename(path)[:-6])
+    fn = os.path.join(VAULT_DIR, f"{day}_{lid}.md")
+    front = ("---\nsource: claude_session\ntags: [" + ", ".join(row["tags"]) + "]\n"
+             f"log: {os.path.relpath(path, PROJECTS)}\n---\n\n# {row['title']}\n\n")
+    with open(fn, "w") as f:
+        f.write(front + row["content"] + "\n")
+    return fn
+
+
 def upsert(url, key, row):
     h = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json",
          "Prefer": "return=minimal"}
@@ -171,10 +191,6 @@ def main():
     todo = [p for p in logs if state.get(p) != os.path.getsize(p)]
     if limit:
         todo = todo[:limit]
-    url, key = resolve_config()
-    if not dry and not (url and key):
-        print("FAIL: Supabase URL/service key not found (env or ~/.config/cr8mor/supabase.env)")
-        sys.exit(2)
     ok = skipped = failed = total_hits = 0
     for p in todo:
         built = build_row(p)
@@ -193,12 +209,12 @@ def main():
             ok += 1
             continue
         try:
-            upsert(url, key, row)
+            write_digest(row, p)
             state[p] = os.path.getsize(p)
             ok += 1
-        except urllib.error.URLError as e:
+        except OSError as e:
             failed += 1
-            print(f"  FAILED {os.path.basename(p)}: {type(e).__name__} {getattr(e, 'code', '')}")
+            print(f"  FAILED {os.path.basename(p)}: {type(e).__name__}")
     if not dry:
         os.makedirs(os.path.dirname(STATE), exist_ok=True)
         json.dump(state, open(STATE, "w"))
