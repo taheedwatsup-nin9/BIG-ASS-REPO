@@ -35,9 +35,11 @@ session host, scripts sent over to the OS.
 - Optional direct feed: PreSonus Monitor Station V2 headphone out can be
   cabled to the S10's mic input if an experiment needs line-level input
   instead of air capture (Taheed's offer — ask before rewiring).
-- Frequency-analysis help: he says a tool ("Romina" — name unconfirmed,
-  possibly REW) may still be installed on one of the devices. Scout it;
-  until then, analysis = ffmpeg/scipy spectrograms on MUZI's side.
+- Remote desktop: **Remmina** on the Lenovo connects straight to the
+  MacBook's screen sharing at **192.168.1.236** (Taheed, 2026-10-22) —
+  the sanctioned visual route into the Mac. Frequency analysis =
+  ffmpeg/scipy spectrograms on MUZI's side. (Local runbook updated;
+  repo copy syncs on the next push.)
 
 ## Environment + ramp rule (Taheed, 2026-10-22 — binding, every run)
 The monitors play into a REAL room at real volume, with a live mic in
@@ -65,7 +67,11 @@ front of them. Therefore, no exceptions:
 - Session 44.1 kHz / 24-bit. Oversampling/anti-aliasing OFF in the synth.
 - Track A: exp8_trackA_anchor_21550.wav (21,550 Hz, −6 dBFS), plus a
   utility/gain plugin whose polarity (∅) flip is automated at the moment
-  Track B's sweep crosses 22,550 Hz (≈ 5.4 s into the 20 s render).
+  Track B's sweep crosses 22,550 Hz (≈ 14.8 s into the 20 s render; the
+  sweep crosses Nyquist 22,050 Hz at exactly 10.0 s). VERIFIED offline
+  by MUZI 2026-10-22: STFT of exp8_premix.wav tracks the moving
+  component 21,210 → 22,050 (t=10 s) then folded back down 21,835 →
+  21,103 — the fold renders exactly as the protocol predicts.
 - Track B: exp8_trackB_sweep_21000_23100.wav (21,000 → 23,100 Hz sweep).
 - Reference render for comparison: exp8_premix.wav (what MUZI rendered
   offline — the fold null should appear in both).
