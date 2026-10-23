@@ -33,6 +33,8 @@
 
 **The guide's own closing caveat, verbatim in substance:** *"You do not need Obsidian to make this work. A folder of markdown files and a good schema file will outperform a fancy tool stack 90% of the time."*
 
+**AMENDED 2026-10-23 (Claude verification):** Obsidian **IS** installed on the Lenovo (flatpak `md.obsidian.Obsidian` 1.14.4, `~/.config/obsidian` present) — verified 2026-10-22. Taheed's 2026-10-22 "I don't even have the app anymore" cannot refer to the Lenovo; likely a different device. The "no app" premise below (§7, decision 1) is corrected, not deleted — the retarget-vs-finish decision is his either way, but "the app is gone" is no longer the reason to kill it.
+
 ---
 
 ## Mapping to Taheed's stack — and how the team gets better
@@ -59,10 +61,14 @@ The headline finding: **Taheed already runs this architecture, one generation fu
 **(b)** His people/groups INDEX.md files already prove index-first works at his scale for the file side; the brain side is embeddings (nomic-embed-text, standardized 2026-10-21 *by his decision*). Replacing that wholesale on a video's say-so would re-litigate a settled standard. But qmd lands exactly on the open question from tonight's Saraev study — the proposed BM25-vs-embeddings bake-off — and it's the *kind* of hand he likes: local, free, on-device, MCP-exposed (his MCP server POC is the natural host), and his standing rule covers it: downloaded hands get vetted before wiring.
 **(c) Verdict: PARK the index-replaces-embeddings claim; ADAPT qmd into the already-proposed retrieval bake-off** as the markdown-side candidate. One trial, measured, against the current standard — not a switch.
 
+**AMENDED 2026-10-23 (Claude verification):** (i) qmd is **already available as a Claude skill on the Lenovo** — the trial's setup cost is near-zero in the Claude lane; (ii) the bake-off must cover **both** brain stores — `brain_memory` (nomic-embed-text) and the separate 9,372-file Lenovo vault synced to `obsidian_brain` via `search_brain.py` with **gemini-embedding-001 (768-d)**, not nomic.
+
 ### 5. Schema co-evolution — validation, not new work
 **(a)** The schema file is the discipline layer, refined by human + AI as the domain teaches them.
 **(b)** This is his AGENTS.md + SOUL.md + RULES.md consolidation, already designed (migration spec drafted; four decisions pending with him). The video adds nothing except independent confirmation that the schema file is "the most important step" — which his stack already treats it as.
 **(c) Verdict: ADOPT as validation.** No action beyond what's queued; cite it when the RULES.md decisions come back around.
+
+**CORRECTED 2026-10-23 (Claude verification, Lenovo):** the "he deleted the app" premise is wrong for the Lenovo — Obsidian 1.14.4 (flatpak `md.obsidian.Obsidian`) is installed there with `~/.config/obsidian` present. His "no app" statement likely refers to another device. The graph-view capability may already exist on the Lenovo; the item-1 lint pass remains the programmatic equivalent either way.
 
 ### 6. The automations (morning briefing, transcript processor)
 **(a)** Cron-driven morning digest from the brain; every call transcript mined into a decision log + action tracker.
@@ -83,7 +89,7 @@ The headline finding: **Taheed already runs this architecture, one generation fu
 
 ## Decisions for Taheed
 
-1. **Obsidian verdict (already leaning, now load-bearing):** confirm the app stays out. That single call settles the Gemini→Obsidian import goal — retarget its output to an immutable raw-sources home feeding the brain, or kill the goal. The video doesn't change his stack either way; it just removes the last reason to keep the question open.
+1. **Obsidian verdict — RE-OPENED 2026-10-23:** the original recommendation ("confirm the app stays out", load-bearing for the Gemini→Obsidian import goal) rested on "app deleted". Claude verified 2026-10-22 that Obsidian 1.14.4 **is** installed on the Lenovo (flatpak, config dir present). The import goal's premise is not settled by "no app": retarget its output to an immutable raw-sources home feeding the brain, finish as originally designed, or kill it — his call on current facts, but "the app is gone" is no longer the reason.
 2. **Queue position for two small builds** — the weekly brain **lint pass** (item 1) and the **qmd trial** inside the retrieval bake-off (item 4). Both are MUZI-side, both cheap, both compete for the same hours as the Dec 31 CR8MOR build order. His call on whether they jump the queue or wait.
 3. **Nothing to buy.** The guide is free, the tools are free, the community is not needed. (Standing rule: MUZI doesn't spend; flagging because the video's design pushes toward the Skool door.)
 

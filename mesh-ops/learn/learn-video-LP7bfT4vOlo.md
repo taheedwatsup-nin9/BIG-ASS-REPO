@@ -1,4 +1,4 @@
-# /learn — "Build Your Personal Knowledge Base With AI (Step by Step)" (Nick Saraev)
+# /learn — "The NEW Way to Build a Second Brain w/ Claude (2027)" (Nick Saraev)
 
 **Video:** https://youtu.be/LP7bfT4vOlo · **Channel:** Nick Saraev (runs LeftClick, an AI growth agency) · **Published:** 2026-10-18 · **Runtime:** ≈12 min [inference — last chapter starts 10:48] · **Status: FINAL (transcript-level) — studied 2026-10-22; verdicts PROPOSED for Taheed.**
 
@@ -7,6 +7,8 @@
 - **Transcript: OBTAINED.** YouTube's own timedtext track-list endpoint returned empty and the youtu.be page fetch failed from this VM (same egress pattern as the roadmap pass), but a full transcript was retrieved via YouTubeToTranscript (mirror of the video's own captions). Everything in column (a) below is from that transcript — paraphrased, with short quotes only where the wording matters.
 - **Verified metadata** (from the video description, mirrored on technology-in-business.net): title, channel, the one-line summary — *"Quick walkthrough of my own personal knowledge base/second brain system (Engram)"* — the chapter list (below), and two funnels: Maker School (paid Skool community, "customer #1 guaranteed") and Maker Zero (free Skool community holding "all course resources" + a copy-paste prompt that rebuilds the system).
 - **Not verified:** the Maker Zero rebuild prompt itself (behind a Skool join — no sign-up attempted). Saraev's performance claims (e.g. ~9/10 cost/latency drop from dropping embeddings) are his assertions from his own tests, not independently checked.
+
+- **AMENDED 2026-10-23 (Claude verification, Lenovo):** studied under the original title *"Build Your Personal Knowledge Base With AI (Step by Step)"*; YouTube's oEmbed now serves the retitled version — *"The NEW Way to Build a Second Brain w/ Claude (2027)"*. Same video ID (LP7bfT4vOlo); the mirror transcript is confirmed to be this video.
 
 ## Chapter map (verified)
 
@@ -62,6 +64,8 @@
 **(b) Map:** This collides head-on with a decision Taheed made **yesterday**: nomic-embed-text as the embedding model going forward (rule-stack decision, 2026-10-21). His current retrieval is already hybrid in practice — MUZI's memory search behaves like ranked text search, while the brain spec (PHASE2-SHARED-RETRIEVAL-SPEC) leans on embeddings. Saraev's claim is plausible for keyword-rich technical corpora (error messages, commands — exactly his atoms) and weak for paraphrase-heavy recall. It is also cheap to test: BM25 over the brain's summaries vs the current pull, same query set, compare hits.
 
 **(c) Verdict: PARK the switch; PROPOSE a bake-off.** Do not rip out nomic-embed-text on a YouTube claim the day after standardizing on it. Do run the comparison once the §3 enrichment exists (BM25 works far better over summaries+atoms than over raw rows — the two ideas are a package). If BM25 ties or wins on his own queries, the embedding pipeline becomes optional weight; if it loses, the claim dies on evidence, his preferred way.
+
+**AMENDED 2026-10-23 (Claude verification):** there are TWO brain stores, not one. `brain_memory` is the nomic-embed-text store standardized 2026-10-21. The Lenovo BRAIN is a separate 9,372-file vault synced into Supabase `obsidian_brain` via `search_brain.py` with **gemini-embedding-001 (768-d)** — not nomic. Both studies mapped only brain_memory. The bake-off must cover **both** stores: BM25 vs nomic on brain_memory, and BM25 vs gemini-embedding-001 on obsidian_brain.
 
 ## 5. Keep it fresh (10:21–10:48) + origins/resources
 
