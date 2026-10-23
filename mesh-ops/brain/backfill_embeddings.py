@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import time
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
@@ -24,6 +25,7 @@ from huggingface_hub import hf_hub_download
 from tokenizers import Tokenizer
 
 PAGE = 200
+MANPAGE_RE = r"^[A-Za-z0-9._+-]+_[0-9][a-z]*$"
 WRITERS = 8
 
 
@@ -62,7 +64,10 @@ def embed(text):
 
 
 def fetch(after_id):
+    # Skip man-page chunks (titles like tor_1, sudoers_5): 94% of the 2026-10-23 backlog, low value,
+    # available locally via `man` (Taheed + MUZI option A spirit). They stay NULL; nothing deleted.
     q = (f"{URL}/rest/v1/brain_chunks?select=id,content&embedding=is.null&id=gt.{after_id}"
+         f"&title=not.match.{urllib.parse.quote(MANPAGE_RE)}"
          f"&order=id.asc&limit={PAGE}")
     return json.load(urllib.request.urlopen(urllib.request.Request(q, headers=HDR), timeout=60))
 
