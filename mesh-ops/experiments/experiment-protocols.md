@@ -13,6 +13,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 
 **Question:** What do your monitors actually reproduce at 24–36 kHz, and what can a phone mic even hear up there?
 
+**Hypothesis / open questions:** The monitors reproduce measurable ultrasonic energy across part of 24–36 kHz, but the usable band will be narrower than the full span and bounded at the top by the phone mic's rolloff rather than the monitors' output. Open: where the measurement chain itself (interface + mic) stops being trustworthy up there.
+
 - A. Generate calibration tones: for each f in {24, 26, 28, 30, 32, 34, 36} kHz, run
   `ffmpeg -f lavfi -i "sine=f=<F>:r=96000:d=5:beep_factor=1" -c:a pcm_f32le tone_<F>k.wav`
 - B. Fix monitor gain at your normal working level. Play tones one at a time, 5 s each.
@@ -28,6 +30,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 ## Experiment 2 — Static-Carrier Difference Tone
 
 **Question:** Does the target mic demodulate f2−f1 while the room stays silent?
+
+**Hypothesis / open questions:** Two in-band carriers presented together produce a detectable f2−f1 product in the phone recording — the mic's nonlinearity demodulates what the room never carries — while each carrier alone produces none. Open: how fast the product decays with distance (1 m → 3 m).
 
 - A. Pick f1, f2 inside the usable band, ≥ 2 kHz apart (e.g., 28.0 and 31.0 kHz → 3.0 kHz product).
 - B. Generate: `ffmpeg -f lavfi -i "sine=f=28000:r=96000:d=10:beep_factor=1" -f lavfi -i "sine=f=31000:r=96000:d=10:beep_factor=1" -filter_complex "[0][1]amix=inputs=2:normalize=0,volume=-6dB" -c:a pcm_f32le carriers.wav`
@@ -45,6 +49,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 
 **Question:** Does the FFmpeg burst design produce the intended sweeping disruption in a real capture?
 
+**Hypothesis / open questions:** The dipped burst design survives the air path: each burst shows the ~5→1 kHz downward difference sweep in the recording at ≥10 dB over the floor, and the 2–4 kHz Gaussian dip costs in-room audibility more than it costs the product. Open: whether the dip depth (0.6) is the right trade.
+
 - A. Generate the verified burst (Gaussian dip pre-compensates the 2–4 kHz ear-sensitivity zone; `beep_factor=1` keeps carriers level-matched):
   `ffmpeg -filter_complex "sine=f=28000:r=96000:d=0.015:beep_factor=1[a];aevalsrc='sin(2*PI*(33000*t + ((29000-33000)/(2*0.015))*t*t))':s=96000:d=0.015[b];[a][b]amix=inputs=2:normalize=0[mix];aevalsrc='1-0.6*exp(-pow((t-0.0075)/0.0032,2))':s=96000:d=0.015[g];[mix][g]amultiply[dipped];[dipped]afade=t=out:st=0.002:d=0.013,volume=-6dB" -c:a pcm_f32le transient_chirp_dipped.wav`
 - B. Loop the burst with 500 ms gaps for 30 s. Play through monitors.
@@ -61,6 +67,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 
 **Question:** Do sub-10 ms bursts evade hearing while overloading phone MEMS mics?
 
+**Hypothesis / open questions:** 8 ms gating sits below conscious detection in the room while the −6 ↔ +12 dB jumps still stress MEMS front-ends into clipping and AGC artifacts in the recording. Open: whether the 125 Hz edge-click train from the hard mute edges appears, and whether masking transients are needed.
+
 - A. Build the gated sequence: 8 ms bursts of the Experiment 3 burst design, amplitude jumping −6 dB ↔ +12 dB between bursts.
 - B. **Blind in-room test:** have someone else start/stop playback while you listen. Can you reliably detect on vs. off? (Expect: no.)
 - C. Record with 2–3 different phone models at 1–3 m.
@@ -76,6 +84,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 
 **Question:** Does one-carrier-per-speaker kill in-room speaker IMD without hurting mic demodulation?
 
+**Hypothesis / open questions:** Splitting the carriers one per speaker removes the in-room difference tone (neither driver ever sees both tones) while the mic at the listening position still demodulates a product equal to or stronger than the mixed single-speaker case. Open: how position-sensitive the product level is off-axis.
+
 - A. Route f1 to the left monitor only, f2 to the right monitor only (hard pan, no mixing).
 - B. In-room spectrum check during playback: any audible difference tone? (Expect: none — neither driver sees both tones.)
 - C. Phone recording at the equidistant sweet spot, then 1 m off-axis: difference tone present at what level?
@@ -90,6 +100,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 
 **Question:** Can burst timing trap the mic preamp in sustained clipping?
 
+**Hypothesis / open questions:** Each phone has a measurable preamp recovery window, and a burst interval tuned inside it sustains disruption with no clean recovery gaps; the window differs per model and becomes part of the recipe. Open: how wide each model's trap window is (the ±50% sweep).
+
 - A. From Experiment 4 recordings, estimate each phone's recovery time: after a burst ends, how long until the recording's background gain returns to normal?
 - B. Set the burst repetition interval to land *inside* the measured recovery window.
 - C. Record 30 s continuous. Analyze: sustained clipping/dropout, or clean recovery gaps between bursts?
@@ -103,6 +115,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 ## Experiment 7 — Watermark Survival (audiowmark minimal proof)
 
 **Question:** Does a spread-spectrum watermark survive speaker → air → phone capture and remain detectable? (Provenance layer — separate from disruption.)
+
+**Hypothesis / open questions:** A strength-12 payload survives one real speaker → air → phone pass at 2 m and remains detectable; recovery degrades with distance and with lossy sources. Open: which strength / source / distance combinations hold up, and at what correlation scores. (Taheed's standing view: watermarking is attribution, not enforcement.)
 
 - A. Install: `audiowmark`, plus `fftw3`, `libsndfile` per the pipeline spec Phase 1.
 - B. `audiowmark gen-key secret.key` (chmod 400).
@@ -119,6 +133,8 @@ Run in order. Experiment 1 gates everything: if the transducers can't deliver ul
 ## Experiment 8 — Nyquist Mirror Fold Hijack
 
 **Question:** Can aliasing across the Nyquist boundary generate a controllable jamming signal that leaves no trace in standard monitors?
+
+**Hypothesis / open questions:** Sweeping Track B across 22,050 Hz folds its image back onto the 21,550 Hz anchor; with Track A's polarity flipped at the collision point (≈14.8 s into the sweep), the folded ghost cancels the anchor — a momentary null in the ultrasonic output — and the MEMS-demodulated tone in the recording reverses direction at each boundary crossing. Open: whether the null survives the air path and the phone's own anti-alias filtering. Note: the flip premix (exp8_premix_flip148.wav, rendered bit-exact 2026-10-22) is the stimulus that can produce the null; the unflipped premix cannot.
 
 **Principle:** At 44.1 kHz, the digital ceiling (f_Nyquist) is exactly 22,050 Hz. When an unbandlimited oscillator sweeps above Nyquist, the digital system cannot track it — instead it mirrors backward into the passband per the aliasing formula: f_alias = |2·f_Nyquist − f_target|. By forcing a collision between an in-band anchor tone and an out-of-band "ghost" alias, you hijack the folded image to manipulate the phase relationship the MEMS mic demodulates.
 
