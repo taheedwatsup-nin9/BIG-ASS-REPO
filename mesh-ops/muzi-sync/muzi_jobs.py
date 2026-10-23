@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -13,10 +14,31 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
+from urllib.request import urlopen
 
 REPO = Path("/home/taheed/Workspaces/sys/BIG-ASS-REPO")
 JOBS_DIR = REPO / "mesh-ops/muzi-sync/jobs"
 WATCHDOG = REPO / "mesh-ops/brain/freshness_watchdog.py"
+S10_SCRIPT = REPO / "mesh-ops/experiments/runner/lenovo/s10.sh"
+S10_SHA256 = "134ac5c6d523f4fd5789cce5f1589f25265a851eb7e7b18f48a762ceed4092d7"
+ADB = Path("/home/taheed/Android/Sdk/platform-tools/adb")
+S10_RECORDINGS = "/sdcard/Android/data/com.nll.asr/files/recordings"
+OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
+S10_MODEL_RE = re.compile(r"^SM[_-]G9(?:70|73|75|77)[A-Z0-9_]*$")
+START_UNITS = frozenset(
+    {"obsidian-sync.service", "claude-sessions-import.service", "freshness-watchdog.service"}
+)
+RESTART_UNITS = frozenset(
+    {
+        "hermes-gateway.service",
+        "hermes-dashboard.service",
+        "cr8mor-blackboard-bridge.service",
+        "claude-always-open.service",
+        "network-watch.service",
+    }
+)
+BRAIN_EMBED_UNIT = "brain-embed-nomic.service"
 ALLOWED_DIRS = (
     REPO,
     Path("/home/taheed/02_Areas/BRAIN"),
@@ -50,7 +72,9 @@ def redact(text: str) -> str:
     return text[:MAX_OUTPUT]
 
 
-def run_command(argv: list[str], *, cwd: Path = REPO) -> tuple[int, str]:
+def run_command(
+    argv: list[str], *, cwd: Path = REPO, env: dict[str, str] | None = None
+) -> tuple[int, str]:
     try:
         result = subprocess.run(
             argv,
@@ -59,6 +83,7 @@ def run_command(argv: list[str], *, cwd: Path = REPO) -> tuple[int, str]:
             capture_output=True,
             text=True,
             timeout=TIMEOUT_SECONDS,
+            env=env,
         )
         return result.returncode, result.stdout + result.stderr
     except subprocess.TimeoutExpired as error:
@@ -91,6 +116,74 @@ def safe_directory(value: Any) -> Path | None:
     if any(requested == root or root in requested.parents for root in roots):
         return requested
     return None
+
+
+def ollama_health() -> tuple[int, str]:
+    try:
+        with urlopen(OLLAMA_TAGS_URL, timeout=5) as response:
+            payload = json.load(response)
+    except (OSError, URLError, json.JSONDecodeError) as error:
+        return 1, f"Ollama health check failed: {type(error).__name__}"
+    models = payload.get("models") if isinstance(payload, dict) else None
+    if not isinstance(models, list):
+        return 1, "Ollama health check returned an unexpected response"
+    names = sorted(
+        item["name"]
+        for item in models
+        if isinstance(item, dict) and isinstance(item.get("name"), str)
+    )
+    return 0, f"HTTP 200; models: {', '.join(names)}"
+
+
+def s10_serial() -> tuple[str | None, str | None]:
+    if not ADB.is_file():
+        return None, "ADB executable is missing"
+    code, output = run_command([str(ADB), "devices", "-l"])
+    if code:
+        return None, "ADB device listing failed"
+    rows = [
+        line.split()
+        for line in output.splitlines()
+        if line.strip() and not line.startswith("List of devices")
+    ]
+    if len(rows) != 1 or len(rows[0]) < 3 or rows[0][1] != "device":
+        return None, "Expected exactly one authorized S10 device"
+    model = next(
+        (item.removeprefix("model:") for item in rows[0][2:] if item.startswith("model:")),
+        "",
+    )
+    if not S10_MODEL_RE.fullmatch(model):
+        return None, "Connected Android device is not a recognized Galaxy S10 model"
+    return rows[0][0], None
+
+
+def set_s10_airplane(state: str) -> tuple[int, str]:
+    serial, error = s10_serial()
+    if error or serial is None:
+        return 2, error or "Could not identify S10 device"
+    enabled = state == "on"
+    value = "true" if enabled else "false"
+    code, output = run_command(
+        [str(ADB), "-s", serial, "shell", "settings", "put", "global", "airplane_mode_on", "1" if enabled else "0"]
+    )
+    if code:
+        return code, output
+    code, broadcast = run_command(
+        [
+            str(ADB),
+            "-s",
+            serial,
+            "shell",
+            "am",
+            "broadcast",
+            "-a",
+            "android.intent.action.AIRPLANE_MODE",
+            "--ez",
+            "state",
+            value,
+        ]
+    )
+    return code, output + broadcast
 
 
 def validate_job(job_type: Any, args: Any) -> str | None:
@@ -134,6 +227,50 @@ def validate_job(job_type: Any, args: Any) -> str | None:
             return "REFUSED: path must be a directory under an approved root"
         return None
 
+    if job_type == "start_service":
+        unit = args.get("unit")
+        if set(args) != {"unit"} or not isinstance(unit, str) or unit not in START_UNITS:
+            return "REFUSED: service is not on the start allowlist"
+        return None
+
+    if job_type == "brain_embed_nomic":
+        action = args.get("action")
+        if set(args) != {"action"} or not isinstance(action, str) or action not in {"start", "stop"}:
+            return "REFUSED: action must be start or stop"
+        return None
+
+    if job_type == "ollama_health":
+        if args:
+            return "REFUSED: ollama_health takes no arguments"
+        return None
+
+    if job_type == "restart_service":
+        unit = args.get("unit")
+        if set(args) != {"unit"} or not isinstance(unit, str) or unit not in RESTART_UNITS:
+            return "REFUSED: service is not on the restart allowlist"
+        return None
+
+    if job_type == "s10_recording":
+        action = args.get("action")
+        if set(args) != {"action"} or not isinstance(action, str) or action not in {"start", "stop"}:
+            return "REFUSED: action must be start or stop"
+        return None
+
+    if job_type == "s10_airplane":
+        state = args.get("state")
+        if state == "on" and set(args) == {"state"}:
+            return None
+        task = args.get("task")
+        if (
+            state == "off"
+            and set(args) == {"state", "task"}
+            and isinstance(task, str)
+            and task.strip()
+            and len(task) <= 120
+        ):
+            return None
+        return "REFUSED: airplane off requires a task reason; valid states are on/off"
+
     return "REFUSED: not on allowlist"
 
 
@@ -157,6 +294,32 @@ def execute_job(job_type: Any, args: Any) -> tuple[int, str]:
         if directory is None:
             return 2, "REFUSED: path must be a directory under an approved root"
         return run_command(["ls", "-la", "--", str(directory)])
+    if job_type == "start_service":
+        return run_command(["systemctl", "--user", "start", args["unit"]])
+    if job_type == "brain_embed_nomic":
+        return run_command(["systemctl", "--user", args["action"], BRAIN_EMBED_UNIT])
+    if job_type == "ollama_health":
+        return ollama_health()
+    if job_type == "restart_service":
+        return run_command(["systemctl", "--user", "restart", args["unit"]])
+    if job_type == "s10_recording":
+        try:
+            digest = hashlib.sha256(S10_SCRIPT.read_bytes()).hexdigest()
+        except OSError:
+            return 2, "REFUSED: S10 helper is unavailable"
+        if S10_SCRIPT.is_symlink() or digest != S10_SHA256:
+            return 2, "REFUSED: S10 helper does not match the reviewed version"
+        env = {
+            "HOME": "/home/taheed",
+            "PATH": "/usr/bin:/bin",
+            "ADB": str(ADB),
+            "S10_REC_DIR": S10_RECORDINGS,
+            "S10_REC_X": "540",
+            "S10_REC_Y": "1972",
+        }
+        return run_command(["/bin/bash", str(S10_SCRIPT), args["action"]], env=env)
+    if job_type == "s10_airplane":
+        return set_s10_airplane(args["state"])
     return 126, "REFUSED: not on allowlist"
 
 

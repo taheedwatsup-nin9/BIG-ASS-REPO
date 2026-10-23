@@ -23,7 +23,7 @@ Supported jobs and argument constraints are listed in [ALLOWLIST.md](ALLOWLIST.m
 
 ## Dry run
 
-Run `python3 mesh-ops/muzi-sync/muzi_jobs.py --dry-run` to validate local queued JSON files. It does not run commands, acquire the worker lock, access Git/network, write files, or push results. This draft currently implements only the read-only jobs in `ALLOWLIST.md`.
+Run `python3 mesh-ops/muzi-sync/muzi_jobs.py --dry-run` to validate local queued JSON files. It does not run commands, acquire the worker lock, access Git/network, write files, or push results. The fixed actions and per-tier restrictions are listed in `ALLOWLIST.md`.
 
 ## Install the user timer
 
@@ -62,6 +62,7 @@ Do not enable the timer until MUZI has verified the installation and given the s
 - A nonblocking file lock prevents overlapping poller runs.
 - The mailbox is not a general command runner: there is no shell, arbitrary executable, or arbitrary script argument.
 - Service names and journal line counts are validated; directory listing is limited to the two approved roots and does not show file contents.
+- S10 actions require a single authorized device matching a Galaxy S10 model; the recording helper is pinned by SHA-256. Turn airplane mode back on as soon as a task no longer needs network.
 - Output is redacted for common token, key, password, JWT, and Telegram-token formats, then capped at 4,000 characters. Redaction is best-effort and must not be treated as a guarantee against every secret format.
 - Each command has a 120-second timeout. A failed individual job is reported and does not halt processing of later jobs. A failed initial pull aborts that poll.
 - Each result is staged and committed with path restriction, then pushed to the configured upstream branch. Before committing, the poller refuses to publish if the checkout already has commits ahead of upstream, preventing unrelated local commits from being pushed. Git commit hooks, repository configuration, and credentials remain under the local user's control. If publishing fails after the result file is written, it requires local operator recovery.
