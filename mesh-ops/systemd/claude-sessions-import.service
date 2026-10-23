@@ -1,0 +1,7 @@
+[Unit]
+Description=Claude session logs -> BRAIN vault digests (secrets-filtered; obsidian-sync carries them to brain_memory)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/Workspaces/sys/BIG-ASS-REPO/mesh-ops/import_claude_sessions.py
+Nice=10

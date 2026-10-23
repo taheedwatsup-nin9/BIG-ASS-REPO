@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly Claude session digest import (before obsidian-sync at 00:00)
+
+[Timer]
+OnCalendar=*-*-* 23:45:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

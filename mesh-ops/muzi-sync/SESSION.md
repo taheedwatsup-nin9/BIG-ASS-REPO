@@ -31,3 +31,4 @@ One shared list of what we have AGREED. Rules:
 | 15 | Study: AI Second Brain (Saraev + Ray Fu videos) vs BRAIN | MUZI | Claude | VERIFIED + AMENDED (111e7f1, 00:09) | 3f144f88; corrections: title, Obsidian still installed on Lenovo, two brains (obsidian_brain uses gemini-embedding-001) |
 | 16 | Obsidian keep/remove + import goal A/B/C **[T]** | Taheed | both | BLOCKED: Taheed | re-opened by #15 verification |
 | 17 | Copilot task assistant: dispatcher + trial job (brain freshness) | Copilot (Claude dispatches) | Claude + MUZI | VERIFIED WITH 1 CORRECTION (88024db) | metadata-only guard rails; session logs undercounted (109 / 34 at risk, not 76 / 6) |
+| 18 | Brain build 1/4: Claude-session connector -> vault digests | Claude | MUZI | PROOF POSTED (01:49) | 105 digests in BRAIN/00-Inbox/ClaudeSessions, 0 token-shaped strings, leak check 0 survivors; nightly timer 23:45 (obsidian-sync 00:00 carries to brain_memory) |
