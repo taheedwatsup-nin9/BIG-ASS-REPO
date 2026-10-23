@@ -22,7 +22,7 @@
 | 19:32 | Sage (Fine-tune and Pre-train AI Models) |
 | 21:58 | Machinist (Local AI and AI Hardware) |
 
-Runtime ≈ 25 min (watch-page last chapter start 21:58; transcript carries no timestamps — unconfirmed); the six archetype segments run ~3 min each — these are orientation maps, not courses.
+Runtime ≈ 25 min, confirmed by both the watch-page chapter map and the timestamped transcript (870 segments); the six archetype segments run ~3 min each — these are orientation maps, not courses.
 
 ---
 
