@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hollemu — CR8MOR local line</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         background:#0b0e13; color:#e8ecf1; line-height:1.5; }
+  main { max-width:640px; margin:0 auto; padding:24px 18px 48px; }
+  h1 { font-size:28px; margin:8px 0 2px; }
+  .sub { color:#9fb0c3; margin:0 0 20px; }
+  .card { background:#131824; border:1px solid #232c3f; border-radius:12px;
+          padding:16px 18px; margin:14px 0; }
+  .card h2 { font-size:16px; margin:0 0 8px; letter-spacing:.02em; }
+  .card p, .card li { color:#c9d4e3; font-size:15px; }
+  .card ul { margin:6px 0 6px 18px; padding:0; }
+  code { background:#0b0e13; border:1px solid #232c3f; border-radius:6px;
+         padding:1px 6px; font-size:13px; }
+  a.btn { display:block; text-align:center; background:#8b5cf6; color:#fff;
+          text-decoration:none; font-weight:600; padding:14px; border-radius:12px;
+          margin:18px 0 6px; font-size:16px; }
+  button.btn { display:block; width:100%; background:#1b2334; color:#e8ecf1;
+          border:1px solid #2c3852; padding:12px; border-radius:12px;
+          font-size:15px; cursor:pointer; }
+  .status { font-size:14px; color:#9fb0c3; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%;
+         background:#f5b942; vertical-align:middle; margin-right:6px; }
+  footer { color:#5f7189; font-size:12px; margin-top:28px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>hollemu</h1>
+  <p class="sub">The Telegram front door to the CR8MOR local stack. You talk, the local model answers — free, private, uncensored, nothing leaves the mesh.</p>
+
+  <a class="btn" href="https://t.me/hollemu_bot">Open @hollemu_bot</a>
+  <button class="btn" id="copyBtn" type="button">Copy the bot username</button>
+
+  <div class="card">
+    <h2>GUIDE — HOW IT WORKS</h2>
+    <ul>
+      <li><strong>Chat:</strong> open the bot and send any message. It routes through n8n to the Dolphin model on the CR8MOR Ollama and replies in the same chat.</li>
+      <li><strong>Inline:</strong> in any Telegram chat, type <code>@hollemu_bot</code> followed by your question to pull the bot in without leaving the conversation.</li>
+      <li><strong>Brain:</strong> dolphin-llama3:8b (Dolphin-class, uncensored) on the Zeabur Ollama, wired through the n8n workflow &ldquo;Telegram Bot to Ollama (hollemu)&rdquo;.</li>
+      <li><strong>Privacy:</strong> the model is local-stack. Your messages go to the bot and the model — not to a public AI service.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>STATUS</h2>
+    <p class="status"><span class="dot"></span>Bot brain is live on the repointed model. The Telegram trigger credential is being replaced (tokens rotated Oct 20) — if the bot doesn&rsquo;t answer, that&rsquo;s the piece still landing.</p>
+  </div>
+
+  <footer>CR8MOR &middot; hollemu guide &middot; served for @hollemu_bot</footer>
+</main>
+<script>
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var btn = this;
+    function done() { btn.textContent = 'Copied: @hollemu_bot'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('@hollemu_bot').then(done, done);
+    } else { done(); }
+  });
+</script>
+</body>
+</html>
