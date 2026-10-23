@@ -17,7 +17,7 @@ One shared list of what we have AGREED. Rules:
 | 4 | Exp 8 run on a valid chain | Claude | MUZI | PROOF POSTED | results/EXP8_RESULTS_2026-10-22.md; run log row 22:54 |
 | 5 | Re-render exp8 premix with Track A polarity flip at 14.8 s | MUZI | Claude | PROPOSED | null can't appear without it |
 | 6 | Exp 1 (24–36 kHz) | Claude | MUZI | BLOCKED: needs a 40 kHz+ measurement mic **[T]** | TLM 102 / S10@48k can't cover it |
-| 7 | Job 3: Zeabur Ollama volume persistence (report only) | Claude | MUZI | AGREED | |
+| 7 | Job 3: Zeabur Ollama volume persistence (report only) | Claude | MUZI | PROOF POSTED | /root/.ollama = /dev/vda2 volume; survived 02:32 UTC restart; PERSISTENT |
 | 8 | Job 4 + run-sheet: one service account in Taheed's GCP (impersonation, no key file) **[T]** | Claude | MUZI | BLOCKED: Taheed A/B | |
 | 9 | Serve hollemu guide page (Zeabur static vs Funnel) **[T]** | Claude | MUZI | BLOCKED: Taheed pick | mesh-ops/hollemu-ui/index.html pulled |
 | 10 | /learn AI-roadmap: pull transcript via Lenovo browser, harden verdicts | Claude | MUZI | AGREED | MUZI study parts 1–2 received |
