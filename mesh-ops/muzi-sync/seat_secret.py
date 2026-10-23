@@ -17,7 +17,7 @@ rows = json.load(urllib.request.urlopen(urllib.request.Request(q, headers={"apik
 # Posts that merely MENTION "SEALED #2" exist too; take the newest real ciphertext (>= 400 base64 chars).
 found = None
 for r in rows:
-    for m in re.finditer(r"SEALED #2\s+([A-Za-z0-9+/=\s]+)", r["body"]):
+    for m in re.finditer(r"SEALED #2[ \t]*\n?[ \t]*([A-Za-z0-9+/=]+(?:\n[A-Za-z0-9+/=]+)*)", r["body"]):
         b = re.sub(r"\s", "", m.group(1))
         if len(b) >= 400:
             found = (r, b); break
