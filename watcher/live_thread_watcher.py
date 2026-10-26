@@ -60,7 +60,11 @@ def get_active_chat_file(directory):
 
 
 WEBHOOK_URL = "https://cr8mor-n8n.zeabur.app/webhook/bac-message"
-HEADER_RE = re.compile(r"^(.) \[\d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]+\] (SIGN-IN|UPDATE|SIGN-OUT|message) (.*?)(?: @| RESULT|$)")
+HEADER_RE = re.compile(
+    r"^(.) \[\d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]+\]\s+"
+    r"(SIGN-IN|UPDATE|SIGN-OUT|PICKUP|STALE|HELLO|QUESTION|HANDOFF|MESSAGE|message)\s+(.*?)(?: @| RESULT| ->|$)"
+)
+MD_HEADER_RE = re.compile(r"^###\s+\d{2}:\d{2}\s+(.*?)\s+\[([^\]]+)\]")
 
 def push_to_supabase(entry_text):
     """
@@ -72,6 +76,7 @@ def push_to_supabase(entry_text):
     
     for line in entry_text.split("\n"):
         m = HEADER_RE.match(line)
+        md_m = MD_HEADER_RE.match(line) if not m else None
         if m:
             if current_entry:
                 entries.append(current_entry)
@@ -81,6 +86,17 @@ def push_to_supabase(entry_text):
                 "author_emoji": emoji,
                 "author_color": "",
                 "kind": kind.lower().replace("-", "_"),
+                "body": line + "\n"
+            }
+        elif md_m:
+            if current_entry:
+                entries.append(current_entry)
+            topic, author = md_m.groups()
+            current_entry = {
+                "author": author.strip(),
+                "author_emoji": "🟧" if "claude" in author.lower() else "🟩",
+                "author_color": "#FFD6A5" if "claude" in author.lower() else "#CAFFBF",
+                "kind": "update",
                 "body": line + "\n"
             }
         else:

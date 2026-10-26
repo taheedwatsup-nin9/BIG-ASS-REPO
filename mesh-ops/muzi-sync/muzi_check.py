@@ -25,9 +25,16 @@ from datetime import datetime, timezone
 VIEWER = "https://bac-live-thread.zeabur.app/"
 SUPABASE = "https://dgxabvxwiqrzzdmwdxha.supabase.co/rest/v1/bac_messages"
 WEBHOOK = "https://cr8mor-n8n.zeabur.app/webhook/bac-message"
-INBOX = os.path.expanduser("~/Desktop/BAC-GROUP/CONFIGURATIONS/inbox/Claude.md")
+INBOXES = [
+    os.path.expanduser("~/Desktop/BAC-GROUP/CONFIGURATIONS/inbox/Claude.md"),
+    os.path.expanduser("~/Desktop/BAC-GROUP/CONFIGURATIONS/inbox/Antigravity.md"),
+    os.path.expanduser("~/Desktop/BAC-GROUP/CONFIGURATIONS/inbox/Copilot.md"),
+]
+AGENT = os.environ.get("BAC_AGENT", "Antigravity" if "--agy" in sys.argv else "Claude")
 STATE = os.path.expanduser("~/.local/state/muzi-check.json")
-STATUS = os.path.expanduser("~/.local/state/claude-status.txt")
+STATUS = os.path.expanduser(
+    "~/.local/state/agy-status.txt" if AGENT == "Antigravity" else "~/.local/state/claude-status.txt"
+)
 SILENT_MIN = 20
 LIVENESS_MIN = 30
 
@@ -39,7 +46,7 @@ def anon_key():
 
 def muzi_posts(since):
     key = anon_key()
-    q = f"{SUPABASE}?select=created_at,kind,body&author=eq.MUZI&order=created_at.asc&limit=50"
+    q = f"{SUPABASE}?select=created_at,author,kind,body&author=in.(MUZI,Taheed)&order=created_at.asc&limit=50"
     if since:
         q += "&created_at=gt." + urllib.request.quote(since)
     req = urllib.request.Request(q, headers={"apikey": key, "Authorization": "Bearer " + key})
@@ -56,7 +63,7 @@ def last_muzi_time():
 
 def heartbeat(body):
     req = urllib.request.Request(WEBHOOK, method="POST", headers={"Content-Type": "application/json"},
-                                 data=json.dumps({"author": "Claude", "kind": "heartbeat", "body": body}).encode())
+                                 data=json.dumps({"author": AGENT, "kind": "heartbeat", "body": body}).encode())
     urllib.request.urlopen(req, timeout=15)
 
 
@@ -64,18 +71,21 @@ def main():
     state = json.load(open(STATE)) if os.path.exists(STATE) else {}
     new = muzi_posts(state.get("since"))
     if new:
-        with open(INBOX, "a") as f:
-            for r in new:
-                f.write(f"\n[{r['created_at'][:16]}Z] {r['kind'].upper()} from MUZI (live thread): "
-                        f"{' '.join(r['body'].split())[:400]}\n")
+        for inbox_path in INBOXES:
+            with open(inbox_path, "a") as f:
+                for r in new:
+                    auth = r.get("author", "MUZI")
+                    f.write(f"\n[{r['created_at'][:16]}Z] {r['kind'].upper()} from {auth} (live thread): "
+                            f"{' '.join(r['body'].split())[:400]}\n")
         state["since"] = new[-1]["created_at"]
         for r in new:
-            print(f"--- MUZI {r['created_at'][:16]}Z {r['kind']}\n{r['body']}\n")
+            auth = r.get("author", "MUZI")
+            print(f"--- {auth} {r['created_at'][:16]}Z {r['kind']}\n{r['body']}\n")
 
     last = last_muzi_time()
     quiet = int((datetime.now(timezone.utc) - datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() // 60) if last else None
     doing = open(STATUS).read().strip() if os.path.exists(STATUS) else "idle"
-    body = f"♥ Claude @ Lenovo {datetime.now():%H:%M} | doing: {doing} | MUZI last post {quiet}m ago"
+    body = f"♥ {AGENT} @ Lenovo {datetime.now():%H:%M} | doing: {doing} | MUZI last post {quiet}m ago"
     if quiet is not None and quiet > SILENT_MIN:
         body += f" | @MUZI you've been quiet {quiet}m — status?"
     # Agreed with MUZI 23:27: checks every run, but POST only on a status change
