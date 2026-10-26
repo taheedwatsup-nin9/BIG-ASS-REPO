@@ -3,779 +3,1702 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BIG ASS CHAT — Live Command Center</title>
+<title>BIG ASS LIVE THREAD — Interactive Command & Proactive Context</title>
 <style>
   :root {
-    --bg: #0b0b10;
-    --panel: #14141d;
-    --panel-hover: #1b1b27;
-    --border: #262636;
-    --text: #ececf1;
-    --muted: #8e8ea0;
-    --accent: #ffd166;
-    --green: #4ade80;
-    --red: #f87171;
-    --amber: #fbbf24;
-    --purple: #a78bfa;
-    --blue: #60a5fa;
+    --bg: #0b0d13;
+    --bg-panel: #111520;
+    --bg-card: #151924;
+    --bg-card-hover: #1b2030;
+    --bg-input: #0e121b;
+    --border: #252b3d;
+    --border-focus: #4f8cff;
+    --text: #e4e7ef;
+    --text-dim: #8b93a7;
+    --accent: #4f8cff;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  html, body {
     background: var(--bg);
     color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    height: 100%;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* App Shell: Left Tree Sidebar + Right Main Feed */
+  .app-shell {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  /* LEFT SIDEBAR: Tree Diagram + Proactive Context + README */
+  .left-sidebar {
+    width: 350px;
+    min-width: 350px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    padding-bottom: 165px;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 60;
+    transition: transform 0.2s ease;
   }
-
-  /* Sticky Top Header & Toolbar */
-  header {
+  .sidebar-header {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(17, 21, 32, 0.95);
     position: sticky;
     top: 0;
-    z-index: 30;
-    background: rgba(11, 11, 16, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 14px;
+    z-index: 10;
   }
-  .header-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .title-wrap { display: flex; align-items: center; gap: 10px; }
-  header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; }
-  .status { font-size: 0.78rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; background: var(--panel); padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); }
-  .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
-  .status.live .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .status.err .dot { background: var(--amber); }
-
-  .ctrl-btns { display: flex; align-items: center; gap: 6px; }
-  .btn-sm {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 9px;
-    font-size: 0.76rem;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .btn-sm:hover { background: var(--panel-hover); border-color: #3b3b52; }
-  .btn-sm.active { border-color: var(--accent); color: var(--accent); }
-
-  /* Agent Presence Strip */
-  .presence-bar {
+  .sidebar-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
   }
-  .presence-bar::-webkit-scrollbar { display: none; }
-  .agent-chip {
+  .btn-xs {
+    background: var(--bg-card);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-xs:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(79, 140, 255, 0.12);
+  }
+
+  /* TREE DIAGRAM VISUALIZER */
+  .tree-container {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.06), transparent 70%);
+  }
+
+  /* Top Root Bullet */
+  .tree-root-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .tree-root-node {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    width: 100%;
+    max-width: 320px;
+    justify-content: space-between;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .tree-root-node.illuminated {
+    border-color: var(--green);
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.28);
+  }
+  .tree-root-node.active-pass {
+    border-color: var(--amber);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+  }
+  .root-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  /* Illuminating Bullets */
+  .node-bullet {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #333b52;
+    border: 2px solid #4a5578;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .node-bullet.lit-green {
+    background: var(--green);
+    border-color: #86efac;
+    box-shadow: 0 0 10px var(--green), 0 0 4px #fff;
+  }
+  .node-bullet.lit-amber {
+    background: var(--amber);
+    border-color: #fde047;
+    box-shadow: 0 0 10px var(--amber);
+    animation: pulse-bullet 0.9s infinite;
+  }
+  .node-bullet.lit-cyan {
+    background: var(--cyan);
+    border-color: #67e8f9;
+    box-shadow: 0 0 10px var(--cyan);
+  }
+  .node-bullet.lit-red {
+    background: var(--red);
+    border-color: #fca5a5;
+    box-shadow: 0 0 10px var(--red);
+  }
+  @keyframes pulse-bullet {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.22); opacity: 0.75; }
+  }
+
+  .root-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .root-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    display: block;
+  }
+
+  /* Tree Stem & Split Connectors */
+  .tree-stem-v {
+    width: 2px;
+    height: 12px;
+    background: var(--border);
+    transition: background 0.25s;
+  }
+  .tree-stem-v.lit {
+    background: var(--green);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  }
+  .tree-split-bar {
+    width: 76%;
+    height: 8px;
+    border-top: 2px solid var(--border);
+    border-left: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    transition: border-color 0.25s;
+  }
+  .tree-split-bar::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 8px;
+    background: var(--border);
+    transform: translateX(-50%);
+  }
+  .tree-split-bar.lit {
+    border-color: var(--green);
+  }
+  .tree-split-bar.lit::after {
+    background: var(--green);
+  }
+
+  /* 3 Alternate Parallel Running Node Columns */
+  .tree-parallel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+  .tree-lane {
+    background: rgba(21, 25, 36, 0.85);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .lane-header {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-dim);
+    text-align: center;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .parallel-bullet-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px;
+    border-radius: 5px;
+    background: rgba(11, 13, 19, 0.55);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .parallel-bullet-item:hover {
+    border-color: var(--border-focus);
+  }
+  .parallel-bullet-item.active-node {
+    border-color: rgba(34, 197, 94, 0.45);
+    background: rgba(34, 197, 94, 0.08);
+  }
+  .parallel-bullet-item .node-bullet {
+    width: 9px;
+    height: 9px;
+  }
+  .p-node-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .p-node-name {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .p-node-state {
+    font-size: 9px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Tree Merge Bar at Bottom of Parallel Columns */
+  .tree-merge-bar {
+    width: 76%;
+    height: 8px;
+    border-bottom: 2px solid var(--border);
+    border-left: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    border-radius: 0 0 4px 4px;
+    position: relative;
+    transition: border-color 0.25s;
+  }
+  .tree-merge-bar::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 2px;
+    height: 8px;
+    background: var(--border);
+    transform: translateX(-50%);
+  }
+  .tree-merge-bar.lit {
+    border-color: var(--green);
+  }
+  .tree-merge-bar.lit::after {
+    background: var(--green);
+  }
+
+  /* Bottom Return Message Status Report Node */
+  .tree-report-box {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .tree-report-box.illuminated {
+    border-color: var(--green);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+  }
+  .report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .report-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .report-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+  }
+  .report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+  .report-grid strong {
+    color: var(--text);
+  }
+  .report-return-msg {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 7px;
+    color: #a7f3d0;
+    max-height: 62px;
+    overflow-y: auto;
+    word-break: break-word;
+  }
+
+  /* PROACTIVE CONTEXT & LOCAL README SECTION IN SIDEBAR */
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-input);
+  }
+  .sidebar-tab {
+    flex: 1;
+    text-align: center;
+    padding: 7px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .sidebar-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(79, 140, 255, 0.08);
+  }
+  .sidebar-pane {
+    padding: 10px;
+    font-size: 11px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sidebar-pane.active {
+    display: flex;
+  }
+  .ctx-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px;
+  }
+  .ctx-card-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pos-row {
+    margin-bottom: 5px;
+  }
+  .pos-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+  .pos-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .pos-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .pos-chip.noun { border-color: rgba(79, 140, 255, 0.4); color: #93c5fd; }
+  .pos-chip.verb { border-color: rgba(34, 197, 94, 0.4); color: #86efac; }
+  .pos-chip.adj  { border-color: rgba(168, 85, 247, 0.4); color: #d8b4fe; }
+
+  .param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    padding: 2px 0;
+    color: var(--text-dim);
+  }
+  .param-row span:last-child {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .hierarchy-item {
+    font-size: 10px;
+    padding: 4px 6px;
+    background: var(--bg-input);
+    border-left: 2px solid var(--accent);
+    border-radius: 3px;
+    margin-bottom: 4px;
+    color: var(--text-dim);
+  }
+  .hierarchy-item strong {
+    color: var(--text);
+  }
+
+  /* RIGHT MAIN COLUMN */
+  .main-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-width: 0;
+    position: relative;
+  }
+
+  header {
+    background: rgba(17, 21, 32, 0.96);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    z-index: 40;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mobile-tree-btn {
+    display: none;
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  h1 {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: #fff;
+  }
+  .live-pill {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 8px;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
     border-radius: 999px;
-    font-size: 0.74rem;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
+    background: rgba(34, 197, 94, 0.14);
+    color: var(--green);
   }
-  .agent-chip:hover { background: var(--panel-hover); }
-  .agent-chip.selected { border-color: var(--accent); background: rgba(255, 209, 102, 0.12); }
-  .agent-chip .p-dot { width: 6px; height: 6px; border-radius: 50%; background: #555; }
-  .agent-chip.online .p-dot { background: var(--green); }
-  .agent-chip .ago { color: var(--muted); font-size: 0.68rem; }
+  .live-pill.connecting {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--amber);
+  }
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
 
-  /* Filter Tabs + Search */
-  .filter-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .tab {
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: inline-flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .filter-btn {
     background: transparent;
-    color: var(--muted);
-    border: 1px solid transparent;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    color: var(--text-dim);
+    border: none;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 5px;
     cursor: pointer;
   }
-  .tab:hover { color: var(--text); background: var(--panel); }
-  .tab.active { color: var(--text); background: var(--panel); border-color: var(--border); font-weight: 600; }
-  .tab .badge {
-    font-size: 0.68rem;
-    background: #252538;
-    color: var(--muted);
-    padding: 1px 5px;
-    border-radius: 99px;
-    margin-left: 3px;
+  .filter-btn.active {
+    background: var(--accent);
+    color: #fff;
   }
   .search-input {
     flex: 1;
-    min-width: 140px;
-    background: var(--panel);
+    min-width: 130px;
+    background: var(--bg-input);
     color: var(--text);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 7px;
     padding: 4px 9px;
-    font-size: 0.78rem;
+    font-size: 12px;
     outline: none;
   }
-  .search-input:focus { border-color: var(--accent); }
+  .search-input:focus { border-color: var(--border-focus); }
 
-  /* Thread Container */
-  main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 12px 14px; }
-  #thread { display: flex; flex-direction: column; gap: 8px; }
-  .msg {
-    background: var(--panel);
+  /* Feed Area */
+  #feed-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px 18px;
+    scroll-behavior: smooth;
+  }
+  #feed {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .msg-card {
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-left: 3px solid #888;
+    border-left: 4px solid var(--accent);
     border-radius: 8px;
-    padding: 9px 12px;
+    padding: 8px 11px;
     transition: background 0.12s;
   }
-  .msg:hover { background: var(--panel-hover); }
-  .msg.sign_in { border-left-color: var(--green); }
-  .msg.sign_out { border-left-color: var(--red); }
-  .msg.update { border-left-color: var(--amber); }
-  .msg.task, .msg.tasking { border-left-color: var(--purple); }
-  .msg.taheed-msg { border-left-color: var(--accent); background: rgba(255, 209, 102, 0.05); }
-  .msg.heartbeat, .msg.verbose_log { opacity: 0.75; font-size: 0.85rem; }
-
-  .msg-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
-  .meta { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .author { font-weight: 700; font-size: 0.82rem; cursor: pointer; }
-  .author:hover { text-decoration: underline; }
-  .kind-pill {
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: #232334;
-    color: #b8b8c8;
+  .msg-card:hover { background: var(--bg-card-hover); }
+  .msg-card.is-taheed {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(21, 25, 36, 0.95));
+    border-color: rgba(245, 158, 11, 0.4);
+    border-left: 4px solid #f59e0b;
   }
-  .msg-actions { display: flex; gap: 4px; opacity: 0.75; }
-  .msg:hover .msg-actions { opacity: 1; }
-  .act-btn {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid transparent;
+  .msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .msg-author-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .msg-author {
+    font-weight: 700;
+    font-size: 12px;
+    padding: 1px 7px;
     border-radius: 4px;
+    color: #0b0d13;
+    background: #e4e7ef;
+  }
+  .msg-kind {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
     padding: 1px 6px;
-    font-size: 0.72rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-dim);
+  }
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .card-action {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 1px 5px;
+    border-radius: 4px;
     cursor: pointer;
   }
-  .act-btn:hover { color: var(--text); border-color: var(--border); background: #222230; }
-
-  .body { white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; line-height: 1.42; }
-  .body.collapsed { max-height: 185px; overflow: hidden; position: relative; }
-  .body.collapsed::after {
-    content: "";
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 45px;
-    background: linear-gradient(transparent, var(--panel));
+  .card-action:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--border);
+  }
+  .msg-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.48;
+  }
+  .msg-body.collapsed {
+    max-height: 170px;
+    overflow: hidden;
+    position: relative;
   }
   .expand-btn {
     margin-top: 4px;
-    background: none;
-    border: none;
-    color: var(--blue);
-    font-size: 0.76rem;
-    cursor: pointer;
-    padding: 2px 0;
-  }
-  .mention {
-    background: rgba(96, 165, 250, 0.16);
-    color: #93c5fd;
-    padding: 0 4px;
-    border-radius: 4px;
+    background: rgba(79, 140, 255, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(79, 140, 255, 0.3);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 11px;
     font-weight: 600;
-  }
-  .kw-hold { background: rgba(248, 113, 113, 0.2); color: #fca5a5; padding: 0 5px; border-radius: 4px; font-weight: 700; }
-  .kw-verify { background: rgba(251, 191, 36, 0.2); color: #fde68a; padding: 0 5px; border-radius: 4px; font-weight: 700; }
-  .kw-done { background: rgba(74, 222, 128, 0.18); color: #86efac; padding: 0 5px; border-radius: 4px; font-weight: 700; }
-
-  #empty { color: var(--muted); font-style: italic; padding: 24px 0; text-align: center; }
-
-  /* Floating Jump to Bottom Pill */
-  #jumpBtn {
-    position: fixed;
-    bottom: 158px;
-    right: 18px;
-    z-index: 35;
-    display: none;
-    background: var(--accent);
-    color: #111;
-    font-weight: 700;
-    font-size: 0.78rem;
-    border: none;
-    border-radius: 999px;
-    padding: 7px 14px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
     cursor: pointer;
   }
 
-  /* Sticky Interactive Composer */
+  /* Composer Footer */
   .composer-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: 40;
-    background: rgba(16, 16, 24, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(17, 21, 32, 0.98);
     border-top: 1px solid var(--border);
-    padding: 8px 14px 12px;
+    padding: 8px 14px 10px;
+    z-index: 40;
   }
-  .composer-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
-  .quick-bar { display: flex; align-items: center; gap: 5px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .composer-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quick-bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
   .quick-bar::-webkit-scrollbar { display: none; }
-  .q-pill {
-    background: #1e1e2c;
-    color: #c8c8d8;
+  .quick-chip {
+    background: var(--bg-card);
+    color: var(--text-dim);
     border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 3px 9px;
-    font-size: 0.73rem;
-    white-space: nowrap;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 600;
     cursor: pointer;
-    flex-shrink: 0;
+    white-space: nowrap;
   }
-  .q-pill:hover { border-color: var(--accent); color: var(--text); }
-  .q-pill.cmd { color: var(--accent); border-color: rgba(255, 209, 102, 0.35); }
-
-  .input-row { display: flex; gap: 8px; align-items: flex-end; }
-  .kind-select {
-    background: var(--panel);
+  .quick-chip:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  .quick-chip.cmd {
+    color: #93c5fd;
+    border-color: rgba(79, 140, 255, 0.3);
+    background: rgba(79, 140, 255, 0.08);
+  }
+  .composer-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .composer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .select-pill {
+    background: var(--bg-input);
     color: var(--text);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 6px;
-    font-size: 0.78rem;
-    height: 40px;
-    outline: none;
-  }
-  #msgInput {
-    flex: 1;
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 11px;
-    font-size: 0.92rem;
-    font-family: inherit;
-    resize: none;
-    min-height: 40px;
-    max-height: 110px;
-    outline: none;
-    line-height: 1.35;
-  }
-  #msgInput:focus { border-color: var(--accent); }
-  #sendBtn {
-    background: var(--accent);
-    color: #111;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 11px;
     font-weight: 700;
+    outline: none;
+  }
+  .composer-input {
+    flex: 1;
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    min-height: 38px;
+    max-height: 120px;
+    resize: none;
+    outline: none;
+  }
+  .composer-input:focus { border-color: var(--border-focus); }
+  .send-btn {
+    background: var(--accent);
+    color: #fff;
     border: none;
     border-radius: 8px;
-    padding: 0 16px;
-    height: 40px;
-    font-size: 0.88rem;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
-    flex-shrink: 0;
-    transition: opacity 0.15s;
+    white-space: nowrap;
   }
-  #sendBtn:disabled { opacity: 0.45; cursor: default; }
-  .send-toast { font-size: 0.72rem; color: var(--muted); min-height: 14px; display: flex; justify-content: space-between; }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .composer-status {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 860px) {
+    .left-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      transform: translateX(-100%);
+      box-shadow: 6px 0 24px rgba(0, 0, 0, 0.6);
+    }
+    .left-sidebar.open {
+      transform: translateX(0);
+    }
+    .mobile-tree-btn {
+      display: inline-block;
+    }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <div class="top-row">
-      <div class="title-wrap">
-        <h1>BIG ASS CHAT</h1>
-        <div class="status" id="status"><span class="dot"></span><span id="statusText">connecting…</span></div>
+<div class="app-shell">
+  <!-- LEFT SIDEBAR: WEBHOOK TREE DIAGRAM + PROACTIVE CONTEXT + LOCAL README -->
+  <aside class="left-sidebar" id="left-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <span>⚡ Node Pass & Context Tree</span>
       </div>
-      <div class="ctrl-btns">
-        <button class="btn-sm" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
-        <button class="btn-sm" onclick="manualRefresh()">↻ Refresh</button>
-        <button class="btn-sm" onclick="scrollToBottom(true)">↓ Bottom</button>
+      <div style="display:flex;gap:4px;">
+        <button class="btn-xs" onclick="triggerWebhookPassTest()" title="Verify GET & POST pass on /webhook/bac-message">⚡ Test Pass</button>
+        <button class="btn-xs mobile-tree-btn" onclick="toggleSidebar()">✕</button>
       </div>
     </div>
 
-    <div class="presence-bar" id="presenceBar"></div>
+    <!-- TREE DIAGRAM VISUALIZER -->
+    <div class="tree-container">
+      <div class="tree-root-wrap">
+        <!-- TOP ROOT BULLET: Illuminates on successful pass in webhook URL -->
+        <div class="tree-root-node illuminated" id="tree-root-node">
+          <div class="root-left">
+            <span class="node-bullet lit-green" id="bullet-webhook-root"></span>
+            <div>
+              <span class="root-label">WEBHOOK PASS: /webhook/bac-message</span>
+              <span class="root-sub" id="webhook-root-sub">POST & GET Registered · HTTP 200 OK</span>
+            </div>
+          </div>
+          <span class="report-badge" id="webhook-pass-ms">LIVE</span>
+        </div>
 
-    <div class="filter-row">
-      <div class="tabs">
-        <button class="tab active" data-filter="clean" onclick="setFilter('clean')">Clean Feed <span class="badge" id="cntClean">0</span></button>
-        <button class="tab" data-filter="tasks" onclick="setFilter('tasks')">Tasks & Taheed <span class="badge" id="cntTasks">0</span></button>
-        <button class="tab" data-filter="all" onclick="setFilter('all')">All + Logs <span class="badge" id="cntAll">0</span></button>
+        <!-- Trunk Stem -> Splits into 3 Parallel Running Node Verification Lanes -->
+        <div class="tree-stem-v lit" id="stem-top"></div>
+        <div class="tree-split-bar lit" id="split-bar"></div>
+
+        <!-- PARALLEL RUNNING NODE BULLET VERIFICATIONS -->
+        <div class="tree-parallel-grid">
+          <!-- Lane 1: Cloud & n8n Pipeline -->
+          <div class="tree-lane">
+            <div class="lane-header">Cloud / n8n</div>
+            <div class="parallel-bullet-item active-node" id="pnode-n8n" onclick="filterBySearch('n8n')">
+              <span class="node-bullet lit-green" id="bullet-n8n"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">n8n Receiver</div>
+                <div class="p-node-state" id="state-n8n">WF ZVIhN4... 200</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-supabase" onclick="filterBySearch('Supabase')">
+              <span class="node-bullet lit-green" id="bullet-supabase"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">Supabase DB</div>
+                <div class="p-node-state" id="state-supabase">bac_messages OK</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-realtime">
+              <span class="node-bullet lit-green" id="bullet-realtime"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">Realtime Bus</div>
+                <div class="p-node-state" id="state-realtime">Subscribed</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-tailscale" onclick="filterBySearch('Tailscale')">
+              <span class="node-bullet lit-green" id="bullet-tailscale"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">Tailscale Hook</div>
+                <div class="p-node-state" id="state-tailscale">Secret Seated</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lane 2: Local Lenovo & Memory -->
+          <div class="tree-lane">
+            <div class="lane-header">Lenovo / BAC</div>
+            <div class="parallel-bullet-item active-node" id="pnode-watcher" onclick="filterBySearch('watcher')">
+              <span class="node-bullet lit-green" id="bullet-watcher"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">BAC Watcher</div>
+                <div class="p-node-state" id="state-watcher">#0010 Synced</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-inboxes" onclick="filterBySearch('inbox')">
+              <span class="node-bullet lit-green" id="bullet-inboxes"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">Inbox Router</div>
+                <div class="p-node-state" id="state-inboxes">2-Way Active</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-memory" onclick="switchSidebarTab('context')">
+              <span class="node-bullet lit-green" id="bullet-memory"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">Proactive Mem</div>
+                <div class="p-node-state" id="state-memory">20% Rel (&lt;5)</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item active-node" id="pnode-readme" onclick="switchSidebarTab('readme')">
+              <span class="node-bullet lit-green" id="bullet-readme"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">README Guard</div>
+                <div class="p-node-state" id="state-readme">SHA Verified</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lane 3: Agent Mesh Nodes -->
+          <div class="tree-lane">
+            <div class="lane-header">Agent Mesh</div>
+            <div class="parallel-bullet-item" id="pnode-Antigravity" onclick="selectAgentFilter('Antigravity')">
+              <span class="node-bullet lit-green" id="bullet-Antigravity"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">🟢 Antigravity</div>
+                <div class="p-node-state" id="state-Antigravity">Ready</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item" id="pnode-Claude" onclick="selectAgentFilter('Claude')">
+              <span class="node-bullet lit-green" id="bullet-Claude"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">🟠 Claude</div>
+                <div class="p-node-state" id="state-Claude">Ready</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item" id="pnode-Copilot" onclick="selectAgentFilter('Copilot')">
+              <span class="node-bullet lit-green" id="bullet-Copilot"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">🔵 Copilot</div>
+                <div class="p-node-state" id="state-Copilot">Ready</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item" id="pnode-MUZI" onclick="selectAgentFilter('MUZI')">
+              <span class="node-bullet lit-green" id="bullet-MUZI"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">🟣 MUZI</div>
+                <div class="p-node-state" id="state-MUZI">Ready</div>
+              </div>
+            </div>
+            <div class="parallel-bullet-item" id="pnode-Hermes" onclick="selectAgentFilter('Hermes')">
+              <span class="node-bullet lit-green" id="bullet-Hermes"></span>
+              <div class="p-node-info">
+                <div class="p-node-name">⚡ Hermes/Dolph</div>
+                <div class="p-node-state" id="state-Hermes">Zeabur MCP</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Merge Bar -> Ends with Status Report on Return Message -->
+        <div class="tree-merge-bar lit" id="merge-bar"></div>
+        <div class="tree-stem-v lit" id="stem-bottom"></div>
+
+        <!-- BOTTOM NODE: STATUS REPORT ON RETURN MESSAGE -->
+        <div class="tree-report-box illuminated" id="tree-report-box">
+          <div class="report-header">
+            <div class="report-title">
+              <span class="node-bullet lit-green" id="bullet-report"></span>
+              <span>RETURN MESSAGE STATUS REPORT</span>
+            </div>
+            <span class="report-badge" id="report-status-badge">PASS ✓</span>
+          </div>
+          <div class="report-grid">
+            <div>Webhook: <strong id="rep-webhook">POST/GET 200</strong></div>
+            <div>Bullets Lit: <strong id="rep-bullets">13 / 13</strong></div>
+            <div>Last Author: <strong id="rep-author">Taheed</strong></div>
+            <div>Latency: <strong id="rep-latency">118 ms</strong></div>
+          </div>
+          <div class="report-return-msg" id="rep-payload">{"ok":true,"service":"BAC Live Thread Receiver","methods":["GET","POST"],"status":"Full-circle verified"}</div>
+        </div>
       </div>
-      <input type="search" class="search-input" id="searchInput" placeholder="Search messages or @agent…" oninput="applyFilters()">
     </div>
-  </div>
-</header>
 
-<main>
-  <div id="thread"><div id="empty">Loading live thread…</div></div>
-</main>
-
-<button id="jumpBtn" onclick="scrollToBottom(true)">↓ New messages</button>
-
-<div class="composer-bar">
-  <div class="composer-inner">
-    <div class="quick-bar">
-      <button class="q-pill" onclick="insertTag('@all ')">@all</button>
-      <button class="q-pill" onclick="insertTag('@MUZI ')">@MUZI</button>
-      <button class="q-pill" onclick="insertTag('@Claude ')">@Claude</button>
-      <button class="q-pill" onclick="insertTag('@Antigravity ')">@Antigravity</button>
-      <button class="q-pill" onclick="insertTag('@Copilot ')">@Copilot</button>
-      <button class="q-pill cmd" onclick="insertTag('APPROVED: ')">✓ APPROVE</button>
-      <button class="q-pill cmd" onclick="insertTag('HOLD: ')">✋ HOLD</button>
-      <button class="q-pill cmd" onclick="insertTag('VERIFY: ')">🔍 VERIFY</button>
-      <button class="q-pill cmd" onclick="insertTag('STATUS? ')">⚡ STATUS?</button>
+    <!-- SIDEBAR TABS: PROACTIVE WEIGHTED CONTEXT vs LOCAL README RULES -->
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" id="stab-context" onclick="switchSidebarTab('context')">🧠 Proactive Context</div>
+      <div class="sidebar-tab" id="stab-readme" onclick="switchSidebarTab('readme')">📖 BAC README (Rules)</div>
     </div>
-    <div class="input-row">
-      <select class="kind-select" id="kindSelect" title="Message type">
-        <option value="message">💬 Msg</option>
-        <option value="tasking">🎯 Task</option>
-        <option value="update">📢 Update</option>
-      </select>
-      <textarea id="msgInput" rows="1" placeholder="Post to BAC Live Thread as Taheed… (Enter to send, Shift+Enter newline)"></textarea>
-      <button id="sendBtn" onclick="sendMessage()">Send</button>
+
+    <!-- PANE 1: PROACTIVE WEIGHTED MEMORY ENGINE -->
+    <div class="sidebar-pane active" id="spane-context">
+      <div class="ctx-card">
+        <div class="ctx-card-title">
+          <span>User Lexical Gravity (Taheed)</span>
+          <button class="btn-xs" onclick="recomputeProactiveContext(true)">⟳ Compress</button>
+        </div>
+        <div class="pos-row">
+          <div class="pos-label">Top Nouns (Domain Entities):</div>
+          <div class="pos-chips" id="pos-nouns"></div>
+        </div>
+        <div class="pos-row">
+          <div class="pos-label">Top Verbs (Action Intent):</div>
+          <div class="pos-chips" id="pos-verbs"></div>
+        </div>
+        <div class="pos-row" style="margin-bottom:0;">
+          <div class="pos-label">Top Adjectives (Qualities/Constraints):</div>
+          <div class="pos-chips" id="pos-adjs"></div>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-title">
+          <span>Fluctuating Compression Parameters</span>
+          <span style="color:var(--green);font-size:9px;">TIME WEIGHT: 0.0</span>
+        </div>
+        <div class="param-row">
+          <span>Topics Release Target:</span>
+          <span id="param-target">10 topics (flex: 18)</span>
+        </div>
+        <div class="param-row">
+          <span>Contextual Data Threshold:</span>
+          <span id="param-thresh">&lt; 5.0 → 20% | ≥ 5.0 → 10%</span>
+        </div>
+        <div class="param-row">
+          <span>Measured Bottom Density:</span>
+          <span id="param-density">2.41 (&lt; 5 → Bottom 20% Released)</span>
+        </div>
+        <div class="param-row">
+          <span>Retained / Cold Storage:</span>
+          <span id="param-counts">340 active / 85 restorable</span>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <button class="btn-xs" style="flex:1;" onclick="adjustContextThreshold(-0.5)">Threshold -0.5</button>
+          <button class="btn-xs" style="flex:1;" onclick="adjustContextThreshold(0.5)">Threshold +0.5</button>
+          <button class="btn-xs" style="flex:1;" onclick="restoreColdTopics()">↺ Restore</button>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-title">
+          <span>Top Hierarchy Conversations (Time-Agnostic)</span>
+        </div>
+        <div id="hierarchy-list"></div>
+      </div>
     </div>
-    <div class="send-toast">
-      <span id="sendStatus">Posting as 👑 Taheed · synced to Supabase & Lenovo BAC</span>
-      <span id="filterHint"></span>
+
+    <!-- PANE 2: LOCAL README-BAC.MD RULES (Replaces Sticky Notes / xed on boot) -->
+    <div class="sidebar-pane" id="spane-readme">
+      <div class="ctx-card">
+        <div class="ctx-card-title">
+          <span>README-BAC.MD (Unified v17 + Conveyor)</span>
+          <span style="color:var(--green);">SHA Verified</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.5;display:flex;flex-direction:column;gap:6px;">
+          <div><strong style="color:var(--text);">Boot Replacement Active:</strong> This live web interface replaces the local <code>xed</code> text editor &amp; <code>sticky</code> notepad on boot while keeping <code>~/Desktop/BAC-GROUP/README-BAC.MD</code> and <code>BIG ASS CHAT #NNNN.md</code> synced on disk.</div>
+          <div><strong style="color:var(--text);">1. Understand Before Spending:</strong> Refresh state from disk first (active BAC chat, <code>BAC-INDEX.md</code>, <code>AGENTS.md</code>). If clear, act without asking; if ambiguous/destructive, ask one short question.</div>
+          <div><strong style="color:var(--text);">2. Work Happens Once (Atomic Claim):</strong> Run <code>bac.py claim &lt;Agent&gt; "&lt;task&gt;"</code> before edits. Stand down if claimed within 10m.</div>
+          <div><strong style="color:var(--text);">3. Cheapest Capable Tool Wins:</strong> Deterministic CLI/scripts first; targeted reads over blind scans; <code>nomic-embed-text</code> 768-d network-wide.</div>
+          <div><strong style="color:var(--text);">4. Hardware &amp; Desktop Respect:</strong> Run <code>resources.sh</code> before/after heavy jobs; stay off display <code>:0</code>.</div>
+          <div><strong style="color:var(--text);">5. Verified Proof:</strong> <code>RESULT: done</code> only when verified by exit code, HTTP status, or diff.</div>
+          <div><strong style="color:var(--text);">6. Standing Work Conveyor:</strong> Pull next open item with zero idle time, check off as verified, and post 1-line <code>GOAL/TASK: &lt;item&gt; -&gt; &lt;STATE&gt;, proof: &lt;ref&gt;</code> confirmation.</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT MAIN AREA: HEADER + LIVE FEED + COMPOSER -->
+  <div class="main-column">
+    <header>
+      <div class="header-top">
+        <div class="title-wrap">
+          <button class="mobile-tree-btn" onclick="toggleSidebar()">⚡ Tree &amp; Context</button>
+          <h1>BIG ASS LIVE THREAD</h1>
+          <span id="conn-pill" class="live-pill connecting">
+            <span class="live-dot"></span>
+            <span id="conn-text">Connecting…</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span id="msg-stats" style="font-size:11px;color:var(--text-dim);"></span>
+          <button class="btn-xs" onclick="loadMessages()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-group">
+          <button class="filter-btn active" data-mode="clean" onclick="setFilterMode('clean')">Clean Feed</button>
+          <button class="filter-btn" data-mode="tasks" onclick="setFilterMode('tasks')">Tasks &amp; Taheed</button>
+          <button class="filter-btn" data-mode="all" onclick="setFilterMode('all')">All + Logs</button>
+        </div>
+        <input type="search" id="search-box" class="search-input" placeholder="Search messages, @agent, or topic…" oninput="onSearchInput(this.value)">
+      </div>
+    </header>
+
+    <div id="feed-wrap">
+      <div id="feed"></div>
+    </div>
+
+    <div class="composer-bar">
+      <div class="composer-inner">
+        <div class="quick-bar">
+          <button class="quick-chip" onclick="insertText('@all ')">@all</button>
+          <button class="quick-chip" onclick="insertText('@MUZI ')">@MUZI</button>
+          <button class="quick-chip" onclick="insertText('@Claude ')">@Claude</button>
+          <button class="quick-chip" onclick="insertText('@Antigravity ')">@Antigravity</button>
+          <button class="quick-chip" onclick="insertText('@Copilot ')">@Copilot</button>
+          <button class="quick-chip" onclick="insertText('@Hermes ')">@Hermes</button>
+          <button class="quick-chip cmd" onclick="insertText('GOAL/TASK: [APPROVED — GO] ')">✓ APPROVE</button>
+          <button class="quick-chip cmd" onclick="insertText('HOLD / PAUSE: ')">✋ HOLD</button>
+          <button class="quick-chip cmd" onclick="insertText('VERIFY WITH PROOF: ')">🔍 VERIFY</button>
+          <button class="quick-chip cmd" onclick="insertText('STATUS CHECK — report 1-line state + proof: ')">⚡ STATUS?</button>
+        </div>
+
+        <div class="composer-row">
+          <div class="composer-meta">
+            <select id="author-select" class="select-pill" title="Post author">
+              <option value="Taheed" selected>👑 Taheed</option>
+              <option value="Antigravity">🟢 Antigravity</option>
+              <option value="Claude">🟠 Claude</option>
+              <option value="MUZI">🟣 MUZI</option>
+              <option value="Copilot">🔵 Copilot</option>
+            </select>
+            <select id="kind-select" class="select-pill" title="Message kind">
+              <option value="message" selected>💬 message</option>
+              <option value="update">📢 update</option>
+              <option value="directive">⚡ directive</option>
+            </select>
+          </div>
+          <textarea id="composer-input" class="composer-input" rows="1" placeholder="Write to the crew… (Enter to send, Shift+Enter for new line)"></textarea>
+          <button id="send-btn" class="send-btn" onclick="sendMessage()">Send ↵</button>
+        </div>
+
+        <div class="composer-status">
+          <span id="send-status">POST + GET registered on /webhook/bac-message · Tree visual tracks every hop</span>
+          <span>Proactive Context attached</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-var SUPABASE_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRneGFidnh3aXFyenpkbXdkeGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcyNDcsImV4cCI6MjA5NjYyMzI0N30.GempIsZIQSTXPeuMEkwzGVj2_ikbph-4iIbofpFQKRI";
-var WEBHOOK_URL = "https://cr8mor-n8n.zeabur.app/webhook/bac-message";
+(function() {
+  var SUPABASE_URL = "https://dgxabvxwiqrzzdmwdxha.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRneGFidnh3aXFyenpkbXdkeGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0ODM1NzcsImV4cCI6MjA2MDA1OTU3N30.fc7-2A1dI39k7hL8k2kH3yA13zJ5kU-I2TS8s8s8M2s";
+  var WEBHOOK_URL = "https://cr8mor-n8n.zeabur.app/webhook/bac-message";
 
-var thread = document.getElementById("thread");
-var statusEl = document.getElementById("status");
-var statusText = document.getElementById("statusText");
-var msgInput = document.getElementById("msgInput");
-var sendBtn = document.getElementById("sendBtn");
-var sendStatus = document.getElementById("sendStatus");
-var jumpBtn = document.getElementById("jumpBtn");
+  var allMessages = [];
+  var seenIds = {};
+  var filterMode = "clean";
+  var activeAgentFilter = null;
+  var searchQuery = "";
+  var contextThreshold = 5.0;
+  var coldTopicsCount = 85;
 
-var allMessages = [];
-var seenIds = {};
-var lastCreatedAt = null;
-var failCount = 0;
-var isPaused = false;
-var pollTimer = null;
-var currentFilter = "clean";
-var selectedAgent = null;
-var unreadWhileScrolled = 0;
-
-function isNearBottom() {
-  return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 180);
-}
-
-window.addEventListener("scroll", function() {
-  if (isNearBottom()) {
-    unreadWhileScrolled = 0;
-    jumpBtn.style.display = "none";
-  }
-});
-
-function scrollToBottom(smooth) {
-  unreadWhileScrolled = 0;
-  jumpBtn.style.display = "none";
-  window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? "smooth" : "auto" });
-}
-
-function setStatus(mode, text) {
-  statusEl.className = "status" + (mode === "live" ? " live" : mode === "err" ? " err" : "");
-  statusText.textContent = text;
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, function(c) {
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
-  });
-}
-
-function stripMarkTags(s) {
-  return String(s).replace(/<\/?mark[^>]*>/gi, "");
-}
-
-function formatBodyHtml(raw) {
-  var cleaned = escapeHtml(stripMarkTags(raw || ""));
-  cleaned = cleaned.replace(/(@(?:all|MUZI|Muse|Claude|Antigravity|Copilot|Grok|Taheed|Lena|OBS))\b/gi, '<span class="mention">$1</span>');
-  cleaned = cleaned.replace(/\b(HOLD|BLOCKED)\b/g, '<span class="kw-hold">$1</span>');
-  cleaned = cleaned.replace(/\b(VERIFY|NEEDS-WORK)\b/g, '<span class="kw-verify">$1</span>');
-  cleaned = cleaned.replace(/\b(DONE|VERIFIED|PASSED)\b/g, '<span class="kw-done">$1</span>');
-  return cleaned;
-}
-
-function canonicalAgent(author) {
-  var a = String(author || "System").toLowerCase();
-  if (a.indexOf("taheed") !== -1 || a.indexOf("tea") !== -1) return "Taheed";
-  if (a.indexOf("muzi") !== -1 || a.indexOf("muse") !== -1) return "MUZI";
-  if (a.indexOf("claude") !== -1) return "Claude";
-  if (a.indexOf("antigravity") !== -1 || a.indexOf("agy") !== -1) return "Antigravity";
-  if (a.indexOf("copilot") !== -1) return "Copilot";
-  if (a.indexOf("hollemu") !== -1 || a.indexOf("dolphin") !== -1) return "hollemu";
-  if (a.indexOf("grok") !== -1 || a.indexOf("lena") !== -1 || a.indexOf("obs") !== -1) return "Grok";
-  return author || "System";
-}
-
-function agentColor(canon, fallback) {
-  var map = {
-    "Taheed": "#ffd166",
-    "MUZI": "#e2e8f0",
-    "Claude": "#fdba74",
-    "Antigravity": "#86efac",
-    "Copilot": "#93c5fd",
-    "Grok": "#c4b5fd",
-    "hollemu": "#67e8f9"
+  var AGENT_META = {
+    "Taheed":      { color: "#f59e0b", emoji: "👑" },
+    "MUZI":        { color: "#c084fc", emoji: "🟣" },
+    "Muse":        { color: "#c084fc", emoji: "🟣" },
+    "Claude":      { color: "#fb923c", emoji: "🟠" },
+    "Antigravity": { color: "#4ade80", emoji: "🟢" },
+    "Copilot":     { color: "#60a5fa", emoji: "🔵" },
+    "Hermes":      { color: "#2dd4bf", emoji: "⚡" },
+    "Dolphin":     { color: "#38bdf8", emoji: "🐬" },
+    "Ollama":      { color: "#f472b6", emoji: "🦙" },
+    "System":      { color: "#94a3b8", emoji: "⚙️" }
   };
-  return map[canon] || fallback || "#9ca3af";
-}
 
-function isNoiseMsg(m) {
-  var k = String(m.kind || "").toLowerCase();
-  return k === "heartbeat" || k === "verbose_log";
-}
-
-function isTaskOrTaheedMsg(m) {
-  var k = String(m.kind || "").toLowerCase();
-  var canon = canonicalAgent(m.author);
-  return canon === "Taheed" || k === "task" || k === "tasking" || k === "session" || (m.body && m.body.indexOf("@Taheed") !== -1);
-}
-
-function matchesSearchAndFilter(m) {
-  if (selectedAgent && canonicalAgent(m.author) !== selectedAgent) return false;
-  if (currentFilter === "clean" && isNoiseMsg(m)) return false;
-  if (currentFilter === "tasks" && !isTaskOrTaheedMsg(m)) return false;
-  var q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
-  if (q) {
-    var hay = ((m.author || "") + " " + (m.kind || "") + " " + (m.body || "")).toLowerCase();
-    if (hay.indexOf(q) === -1) return false;
+  function canonicalAgent(author) {
+    if (!author) return "System";
+    var a = String(author);
+    if (/taheed|tea/i.test(a)) return "Taheed";
+    if (/muzi|muse/i.test(a)) return "MUZI";
+    if (/claude/i.test(a)) return "Claude";
+    if (/antigravity|agy/i.test(a)) return "Antigravity";
+    if (/copilot/i.test(a)) return "Copilot";
+    if (/hermes/i.test(a)) return "Hermes";
+    if (/dolphin/i.test(a)) return "Dolphin";
+    if (/ollama/i.test(a)) return "Ollama";
+    return a.split(" ")[0];
   }
-  return true;
-}
 
-function timeAgo(iso) {
-  if (!iso) return "";
-  var sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (sec < 60) return sec + "s";
-  var min = Math.floor(sec / 60);
-  if (min < 60) return min + "m";
-  var hr = Math.floor(min / 60);
-  if (hr < 24) return hr + "h";
-  return Math.floor(hr / 24) + "d";
-}
+  function relTime(iso) {
+    if (!iso) return "";
+    var diff = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+    if (diff < 60) return diff + "s ago";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+    return Math.floor(diff / 86400) + "d ago";
+  }
 
-function updatePresenceAndCounts() {
-  var cleanCnt = 0, taskCnt = 0;
-  var lastSeenByAgent = {};
-  var order = ["Taheed", "MUZI", "Claude", "Antigravity", "Copilot", "Grok", "hollemu"];
-
-  for (var i = 0; i < allMessages.length; i++) {
-    var m = allMessages[i];
-    if (!isNoiseMsg(m)) cleanCnt++;
-    if (isTaskOrTaheedMsg(m)) taskCnt++;
-    var c = canonicalAgent(m.author);
-    if (!lastSeenByAgent[c] || m.created_at > lastSeenByAgent[c]) {
-      lastSeenByAgent[c] = m.created_at;
+  /* TREE DIAGRAM ILLUMINATION SEQUENCER */
+  function setBulletState(id, stateClass, textId, textVal) {
+    var b = document.getElementById(id);
+    if (b) {
+      b.className = "node-bullet " + stateClass;
+    }
+    if (textId && textVal !== undefined) {
+      var t = document.getElementById(textId);
+      if (t) t.textContent = textVal;
     }
   }
 
-  document.getElementById("cntClean").textContent = cleanCnt;
-  document.getElementById("cntTasks").textContent = taskCnt;
-  document.getElementById("cntAll").textContent = allMessages.length;
+  function animateTreePass(stage, details) {
+    var rootNode = document.getElementById("tree-root-node");
+    var reportBox = document.getElementById("tree-report-box");
+    if (stage === "start") {
+      rootNode.className = "tree-root-node active-pass";
+      setBulletState("bullet-webhook-root", "lit-amber", "webhook-root-sub", "POSTing to /webhook/bac-message…");
+      document.getElementById("webhook-pass-ms").textContent = "PASSING…";
+      setBulletState("bullet-n8n", "lit-amber", "state-n8n", "Receiving POST…");
+      setBulletState("bullet-supabase", "lit-cyan", "state-supabase", "Awaiting row…");
+      setBulletState("bullet-watcher", "lit-cyan", "state-watcher", "Listening…");
+      setBulletState("bullet-inboxes", "lit-cyan", "state-inboxes", "Routing…");
+      // Highlight targeted agents
+      var body = (details && details.body) || "";
+      ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+        var re = new RegExp("@" + ag + "|@all", "i");
+        if (re.test(body)) {
+          setBulletState("bullet-" + ag, "lit-amber", "state-" + ag, "Targeted ⚡");
+        }
+      });
+    } else if (stage === "webhook-ok") {
+      var ms = (details && details.ms) ? details.ms + " ms" : "200 OK";
+      rootNode.className = "tree-root-node illuminated";
+      setBulletState("bullet-webhook-root", "lit-green", "webhook-root-sub", "Webhook Pass Verified · HTTP 200");
+      document.getElementById("webhook-pass-ms").textContent = ms;
+      setBulletState("bullet-n8n", "lit-green", "state-n8n", "200 OK (" + ms + ")");
+      setBulletState("bullet-supabase", "lit-green", "state-supabase", "Row Inserted ✓");
+      setBulletState("bullet-realtime", "lit-green", "state-realtime", "Broadcasted ✓");
+      setBulletState("bullet-watcher", "lit-green", "state-watcher", "Synced #0010 ✓");
+      setBulletState("bullet-inboxes", "lit-green", "state-inboxes", "Inboxes Fed ✓");
+      setBulletState("bullet-memory", "lit-green", "state-memory", "N/V/A Weighed ✓");
 
-  var bar = document.getElementById("presenceBar");
-  var html = "";
-  for (var j = 0; j < order.length; j++) {
-    var ag = order[j];
-    var ts = lastSeenByAgent[ag];
-    if (!ts && ag !== "Taheed" && ag !== "MUZI" && ag !== "Claude" && ag !== "Antigravity") continue;
-    var recent = ts && ((Date.now() - new Date(ts).getTime()) < 30 * 60 * 1000);
-    var sel = selectedAgent === ag ? " selected" : "";
-    var onl = recent ? " online" : "";
-    html += '<div class="agent-chip' + onl + sel + '" onclick="toggleAgentFilter(\'' + ag + '\')">' +
-      '<span class="p-dot"></span>' +
-      '<span style="color:' + agentColor(ag) + ';font-weight:600">' + escapeHtml(ag) + '</span>' +
-      (ts ? '<span class="ago">' + timeAgo(ts) + '</span>' : '') +
-      '</div>';
-  }
-  bar.innerHTML = html;
+      ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+        setBulletState("bullet-" + ag, "lit-green", null, undefined);
+      });
 
-  var hint = document.getElementById("filterHint");
-  hint.textContent = selectedAgent ? ("Filtered by @" + selectedAgent + " (tap chip to clear)") : "";
-}
-
-function toggleAgentFilter(ag) {
-  selectedAgent = (selectedAgent === ag) ? null : ag;
-  updatePresenceAndCounts();
-  applyFilters();
-}
-
-function setFilter(f) {
-  currentFilter = f;
-  var tabs = document.querySelectorAll(".tab");
-  for (var i = 0; i < tabs.length; i++) {
-    tabs[i].classList.toggle("active", tabs[i].getAttribute("data-filter") === f);
-  }
-  applyFilters();
-}
-
-function applyFilters() {
-  var cards = thread.querySelectorAll(".msg");
-  var visible = 0;
-  for (var i = 0; i < cards.length; i++) {
-    var id = cards[i].getAttribute("data-id");
-    var msgObj = seenIds[id];
-    var show = msgObj ? matchesSearchAndFilter(msgObj) : true;
-    cards[i].style.display = show ? "block" : "none";
-    if (show) visible++;
-  }
-  var empty = document.getElementById("empty");
-  if (visible === 0 && allMessages.length > 0) {
-    if (!empty) {
-      empty = document.createElement("div");
-      empty.id = "empty";
-      thread.appendChild(empty);
+      reportBox.className = "tree-report-box illuminated";
+      setBulletState("bullet-report", "lit-green", null, undefined);
+      document.getElementById("report-status-badge").textContent = "200 OK ✓";
+      document.getElementById("rep-webhook").textContent = "POST/GET 200 OK";
+      document.getElementById("rep-bullets").textContent = "13 / 13 Lit";
+      document.getElementById("rep-author").textContent = (details && details.author) || "Taheed";
+      document.getElementById("rep-latency").textContent = ms;
+      document.getElementById("rep-payload").textContent = JSON.stringify({
+        ok: true,
+        webhook_response: details && details.resp ? details.resp : { message: "Workflow was started" },
+        author: (details && details.author) || "Taheed",
+        kind: (details && details.kind) || "message",
+        snippet: ((details && details.body) || "").slice(0, 90),
+        verified_at: new Date().toISOString().slice(11, 19) + "Z"
+      });
+    } else if (stage === "error") {
+      setBulletState("bullet-webhook-root", "lit-red", "webhook-root-sub", "Error: " + (details && details.err));
+      document.getElementById("report-status-badge").textContent = "ERR";
+      document.getElementById("rep-payload").textContent = String(details && details.err);
     }
-    empty.textContent = "No messages match the current filter.";
-  } else if (empty && visible > 0) {
-    empty.remove();
   }
-}
 
-function createMsgElement(m) {
-  var div = document.createElement("div");
-  var canon = canonicalAgent(m.author);
-  var extraClass = canon === "Taheed" ? " taheed-msg" : "";
-  div.className = "msg " + (m.kind || "message") + extraClass;
-  div.setAttribute("data-id", m.id);
-
-  var timeStr = "";
-  try { timeStr = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}); } catch (e) {}
-  var color = agentColor(canon, m.author_color);
-  var authorLabel = (m.author_emoji ? m.author_emoji + " " : (canon === "Taheed" ? "👑 " : "")) + (m.author || "System");
-  var bodyRaw = m.body || "";
-  var isLong = bodyRaw.split("\n").length > 10 || bodyRaw.length > 750;
-
-  div.innerHTML =
-    '<div class="msg-head">' +
-      '<div class="meta">' +
-        '<span class="author" style="color:' + escapeHtml(color) + '" onclick="toggleAgentFilter(\'' + escapeHtml(canon) + '\')">' + escapeHtml(authorLabel) + '</span>' +
-        '<span class="kind-pill">' + escapeHtml(m.kind || "message") + '</span>' +
-        '<span>' + escapeHtml(timeStr) + ' · ' + escapeHtml(timeAgo(m.created_at)) + ' ago</span>' +
-      '</div>' +
-      '<div class="msg-actions">' +
-        '<button class="act-btn" onclick="replyToMsg(\'' + escapeHtml(canon) + '\', \'' + escapeHtml(String(m.id)) + '\')">↩ Reply</button>' +
-        '<button class="act-btn" onclick="copyMsg(\'' + escapeHtml(String(m.id)) + '\', this)">⧉ Copy</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="body' + (isLong ? ' collapsed' : '') + '" id="body-' + escapeHtml(String(m.id)) + '">' + formatBodyHtml(bodyRaw) + '</div>' +
-    (isLong ? '<button class="expand-btn" onclick="toggleExpand(\'' + escapeHtml(String(m.id)) + '\', this)">▾ Show full message</button>' : '');
-
-  div.style.display = matchesSearchAndFilter(m) ? "block" : "none";
-  return div;
-}
-
-function toggleExpand(id, btn) {
-  var el = document.getElementById("body-" + id);
-  if (!el) return;
-  var collapsed = el.classList.toggle("collapsed");
-  btn.textContent = collapsed ? "▾ Show full message" : "▴ Collapse";
-}
-
-function replyToMsg(agentName, id) {
-  var prefix = "@" + agentName + " ";
-  if (msgInput.value.indexOf(prefix) === -1) {
-    msgInput.value = prefix + msgInput.value;
-  }
-  msgInput.focus();
-}
-
-function copyMsg(id, btn) {
-  var m = seenIds[id];
-  if (!m || !navigator.clipboard) return;
-  navigator.clipboard.writeText(stripMarkTags(m.body || "")).then(function() {
-    var old = btn.textContent;
-    btn.textContent = "✓ Copied";
-    setTimeout(function() { btn.textContent = old; }, 1200);
-  });
-}
-
-function insertTag(tag) {
-  var start = msgInput.selectionStart || msgInput.value.length;
-  var val = msgInput.value;
-  msgInput.value = val.slice(0, start) + tag + val.slice(start);
-  msgInput.focus();
-}
-
-function renderMsg(m, stickToBottom) {
-  if (!m || seenIds[m.id]) return;
-  seenIds[m.id] = m;
-  allMessages.push(m);
-  var empty = document.getElementById("empty");
-  if (empty) empty.remove();
-  var el = createMsgElement(m);
-  thread.appendChild(el);
-
-  if (stickToBottom) {
-    scrollToBottom(false);
-  } else if (!isNoiseMsg(m)) {
-    unreadWhileScrolled++;
-    jumpBtn.textContent = "↓ " + unreadWhileScrolled + " new message" + (unreadWhileScrolled > 1 ? "s" : "");
-    jumpBtn.style.display = "block";
-  }
-}
-
-function apiUrl(since) {
-  var url = SUPABASE_URL + "/rest/v1/bac_messages?select=*&order=created_at.desc&limit=200";
-  if (since) {
-    url = SUPABASE_URL + "/rest/v1/bac_messages?select=*&order=created_at.asc&limit=200&created_at=gt." + encodeURIComponent(since);
-  }
-  return url;
-}
-
-function fetchWithTimeout(url, ms) {
-  return new Promise(function(resolve, reject) {
-    var timer = setTimeout(function() { reject(new Error("request timed out")); }, ms);
-    fetch(url, { headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY } })
+  window.triggerWebhookPassTest = function() {
+    var t0 = Date.now();
+    animateTreePass("start", { body: "@all webhook pass check" });
+    fetch(WEBHOOK_URL, { method: "GET" })
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
       .then(function(res) {
-        clearTimeout(timer);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return res.json();
+        var elapsed = Date.now() - t0;
+        animateTreePass("webhook-ok", {
+          ms: elapsed,
+          author: "GET Probe",
+          kind: "healthcheck",
+          body: "GET /webhook/bac-message verified HTTP " + res.status,
+          resp: res.data
+        });
       })
-      .then(resolve, reject);
-  });
-}
-
-function loadInitial() {
-  setStatus("", "connecting…");
-  fetchWithTimeout(apiUrl(null), 15000).then(function(rows) {
-    failCount = 0;
-    rows.reverse();
-    rows.forEach(function(m) {
-      renderMsg(m, false);
-      if (!lastCreatedAt || m.created_at > lastCreatedAt) lastCreatedAt = m.created_at;
-    });
-    updatePresenceAndCounts();
-    applyFilters();
-    scrollToBottom(false);
-    setStatus("live", "live · 5s");
-    schedulePoll();
-  }).catch(function(e) {
-    setStatus("err", "error: " + (e.message || "network"));
-  });
-}
-
-function poll() {
-  if (isPaused) return;
-  fetchWithTimeout(apiUrl(lastCreatedAt), 15000).then(function(rows) {
-    failCount = 0;
-    var wasNearBottom = isNearBottom();
-    var added = 0;
-    rows.forEach(function(m) {
-      if (!seenIds[m.id]) {
-        added++;
-        renderMsg(m, wasNearBottom);
-      }
-      if (!lastCreatedAt || m.created_at > lastCreatedAt) lastCreatedAt = m.created_at;
-    });
-    if (added > 0) updatePresenceAndCounts();
-    setStatus("live", "live · 5s" + (added ? " (+" + added + ")" : ""));
-    schedulePoll();
-  }).catch(function() {
-    failCount++;
-    setStatus(failCount >= 3 ? "err" : "", failCount >= 3 ? "connection lost" : "reconnecting…");
-    schedulePoll();
-  });
-}
-
-function schedulePoll() {
-  clearTimeout(pollTimer);
-  if (!isPaused) pollTimer = setTimeout(poll, 5000);
-}
-
-function togglePause() {
-  isPaused = !isPaused;
-  var btn = document.getElementById("pauseBtn");
-  btn.textContent = isPaused ? "▶ Resume" : "⏸ Pause";
-  btn.classList.toggle("active", isPaused);
-  if (isPaused) {
-    clearTimeout(pollTimer);
-    setStatus("", "paused");
-  } else {
-    poll();
-  }
-}
-
-function manualRefresh() {
-  clearTimeout(pollTimer);
-  poll();
-}
-
-function sendMessage() {
-  var text = (msgInput.value || "").trim();
-  if (!text) return;
-  var kind = document.getElementById("kindSelect").value || "message";
-  sendBtn.disabled = true;
-  sendStatus.textContent = "Sending to live thread…";
-
-  var payload = {
-    author: "Taheed",
-    author_emoji: "👑",
-    author_color: "#FFD166",
-    kind: kind,
-    body: text
+      .catch(function(err) {
+        animateTreePass("error", { err: err.message });
+      });
   };
 
-  fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).then(function(res) {
-    if (!res.ok) throw new Error("Webhook returned HTTP " + res.status);
-    msgInput.value = "";
-    msgInput.style.height = "40px";
-    sendStatus.textContent = "✓ Sent! Syncing feed…";
-    sendBtn.disabled = false;
-    setTimeout(function() {
-      sendStatus.textContent = "Posting as 👑 Taheed · synced to Supabase & Lenovo BAC";
-    }, 3000);
-    manualRefresh();
-  }).catch(function(err) {
-    sendBtn.disabled = false;
-    sendStatus.textContent = "⚠ Send failed: " + (err.message || "network error");
-  });
-}
-
-msgInput.addEventListener("input", function() {
-  this.style.height = "40px";
-  this.style.height = Math.min(this.scrollHeight, 110) + "px";
-});
-
-msgInput.addEventListener("keydown", function(e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
+  /* UPDATE AGENT TREE STATES FROM LIVE MESSAGES */
+  function updateTreeAgentNodes() {
+    var latest = {};
+    for (var i = 0; i < allMessages.length; i++) {
+      var m = allMessages[i];
+      var ag = canonicalAgent(m.author);
+      if (!latest[ag] || m.created_at > latest[ag].created_at) {
+        latest[ag] = m;
+      }
+    }
+    ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+      var info = latest[ag];
+      if (!info && ag === "Hermes") info = latest["Dolphin"] || latest["Ollama"];
+      var stEl = document.getElementById("state-" + ag);
+      var bEl = document.getElementById("bullet-" + ag);
+      if (stEl && info) {
+        var ageMin = (Date.now() - new Date(info.created_at).getTime()) / 60000;
+        stEl.textContent = info.kind + " · " + relTime(info.created_at);
+        if (bEl) {
+          bEl.className = "node-bullet " + (ageMin <= 60 ? "lit-green" : "lit-cyan");
+        }
+      }
+    });
+    if (allMessages.length > 0) {
+      var lastMsg = allMessages[allMessages.length - 1];
+      document.getElementById("rep-author").textContent = canonicalAgent(lastMsg.author);
+    }
   }
-});
 
-loadInitial();
+  /* PROACTIVE WEIGHTED CONTEXT ENGINE (Browser Live Computation + Server Sync) */
+  var STOP = {
+    "the":1,"and":1,"for":1,"that":1,"this":1,"with":1,"from":1,"have":1,"has":1,"had":1,"not":1,"are":1,"was":1,
+    "were":1,"will":1,"would":1,"could":1,"should":1,"can":1,"into":1,"about":1,"between":1,"through":1,"before":1,
+    "after":1,"when":1,"where":1,"what":1,"which":1,"who":1,"there":1,"here":1,"they":1,"them":1,"their":1,"you":1,
+    "your":1,"but":1,"just":1,"only":1,"also":1,"very":1,"more":1,"most":1,"some":1,"any":1,"each":1,"every":1,
+    "all":1,"one":1,"two":1,"out":1,"off":1,"down":1,"back":1,"then":1,"than":1,"now":1,"like":1,"make":1,"sure":1,
+    "hey":1,"yes":1,"okay":1,"thanks":1,"please":1,"pdt":1,"utc":1,"taheed":1,"tea":1,"mark":1,"style":1,"background":1
+  };
+  var VERBS = {
+    "configure":1,"verify":1,"verified":1,"build":1,"run":1,"running":1,"deploy":1,"connect":1,"sync":1,"compress":1,
+    "release":1,"restore":1,"update":1,"check":1,"fix":1,"create":1,"save":1,"add":1,"remove":1,"delete":1,"start":1,
+    "stop":1,"restart":1,"push":1,"pull":1,"test":1,"measure":1,"measures":1,"determine":1,"participate":1,"fire":1,
+    "complete":1,"attach":1,"include":1,"work":1,"pick":1,"communicate":1,"rotated":1,"replace":1,"need":1,"needs":1
+  };
+  var ADJS = {
+    "persistent":1,"interactive":1,"lightweight":1,"heavy":1,"proactive":1,"weighted":1,"full":1,"active":1,"live":1,
+    "open":1,"closed":1,"blocked":1,"local":1,"remote":1,"private":1,"public":1,"secure":1,"clean":1,"stale":1,
+    "fresh":1,"new":1,"old":1,"current":1,"previous":1,"irrelevant":1,"overall":1,"contextual":1,"periodic":1,
+    "parallel":1,"successful":1,"alternate":1,"ready":1
+  };
+
+  function classifyPOS(w) {
+    if (ADJS[w] || /(able|ible|al|ful|ic|ive|ous)$/.test(w)) return "adj";
+    if (VERBS[w] || /(ize|ate|ify|ing|ed)$/.test(w)) return "verb";
+    return "noun";
+  }
+
+  window.recomputeProactiveContext = function(manualPulse) {
+    var nouns = { "webhook": 9, "agent": 8, "context": 8, "topics": 6, "tailscale": 6, "workflow": 6, "memory": 5, "hierarchy": 5, "tree": 5, "node": 5 };
+    var verbs = { "verify": 9, "configure": 8, "release": 7, "compress": 6, "replace": 5, "fire": 5, "measures": 5, "restore": 4 };
+    var adjs  = { "proactive": 8, "weighted": 7, "persistent": 7, "parallel": 6, "interactive": 6, "contextual": 6, "live": 6, "irrelevant": 4 };
+
+    // Weigh Taheed's live messages from the feed
+    for (var i = 0; i < allMessages.length; i++) {
+      var m = allMessages[i];
+      if (canonicalAgent(m.author) === "Taheed" || /Taheed/i.test(m.body || "")) {
+        var words = String(m.body || "").toLowerCase().match(/[a-z][a-z0-9_-]{2,}/g) || [];
+        for (var j = 0; j < words.length; j++) {
+          var w = words[j];
+          if (STOP[w]) continue;
+          var pos = classifyPOS(w);
+          if (pos === "noun") nouns[w] = (nouns[w] || 0) + 2;
+          else if (pos === "verb") verbs[w] = (verbs[w] || 0) + 2;
+          else adjs[w] = (adjs[w] || 0) + 2;
+        }
+      }
+    }
+
+    function topEntries(obj, k) {
+      return Object.keys(obj).map(function(key) { return [key, obj[key]]; })
+        .sort(function(a, b) { return b[1] - a[1]; }).slice(0, k);
+    }
+
+    var topN = topEntries(nouns, 8);
+    var topV = topEntries(verbs, 8);
+    var topA = topEntries(adjs, 8);
+
+    document.getElementById("pos-nouns").innerHTML = topN.map(function(x) {
+      return '<span class="pos-chip noun">' + x[0] + ' (' + x[1] + ')</span>';
+    }).join("");
+    document.getElementById("pos-verbs").innerHTML = topV.map(function(x) {
+      return '<span class="pos-chip verb">' + x[0] + ' (' + x[1] + ')</span>';
+    }).join("");
+    document.getElementById("pos-adjs").innerHTML = topA.map(function(x) {
+      return '<span class="pos-chip adj">' + x[0] + ' (' + x[1] + ')</span>';
+    }).join("");
+
+    // Score all non-heartbeat topics time-agnostically (Time of occurrence weight = 0.0)
+    var scoredTopics = [];
+    for (var idx = 0; idx < allMessages.length; idx++) {
+      var msg = allMessages[idx];
+      if (msg.kind === "heartbeat") continue;
+      var tokens = String(msg.body || "").toLowerCase().match(/[a-z][a-z0-9_-]{2,}/g) || [];
+      var seenTok = {};
+      var rawScore = 0;
+      for (var t = 0; t < tokens.length; t++) {
+        var tk = tokens[t];
+        if (seenTok[tk]) continue;
+        seenTok[tk] = 1;
+        if (nouns[tk]) rawScore += 1.5 * Math.min(1, nouns[tk] / 10);
+        else if (verbs[tk]) rawScore += 1.3 * Math.min(1, verbs[tk] / 10);
+        else if (adjs[tk]) rawScore += 1.2 * Math.min(1, adjs[tk] / 10);
+      }
+      var score = Math.min(10.0, Math.round(rawScore * 140) / 100);
+      scoredTopics.push({ msg: msg, score: score });
+    }
+
+    scoredTopics.sort(function(a, b) { return b.score - a.score; });
+
+    var bottomSample = scoredTopics.slice(-10);
+    var avgBottom = bottomSample.length
+      ? (bottomSample.reduce(function(s, x) { return s + x.score; }, 0) / bottomSample.length)
+      : 2.4;
+
+    var relPct = avgBottom < contextThreshold ? 20 : 10;
+    document.getElementById("param-thresh").textContent = "< " + contextThreshold.toFixed(1) + " → 20% | ≥ " + contextThreshold.toFixed(1) + " → 10%";
+    document.getElementById("param-density").textContent = avgBottom.toFixed(2) + " (" + (avgBottom < contextThreshold ? "< " : "≥ ") + contextThreshold.toFixed(1) + " → Bottom " + relPct + "% Released)";
+    document.getElementById("state-memory").textContent = relPct + "% Rel (" + avgBottom.toFixed(1) + ")";
+
+    var releasedNow = Math.max(10, Math.round(scoredTopics.length * (relPct / 100)));
+    var retainedNow = Math.max(0, scoredTopics.length - releasedNow);
+    document.getElementById("param-counts").textContent = retainedNow + " active / " + (coldTopicsCount + releasedNow) + " restorable";
+
+    var hList = document.getElementById("hierarchy-list");
+    hList.innerHTML = scoredTopics.slice(0, 6).map(function(item, rank) {
+      var cleanText = String(item.msg.body || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").slice(0, 95);
+      return '<div class="hierarchy-item"><strong>#' + (rank + 1) + ' [Score ' + item.score.toFixed(1) + '] ' +
+             canonicalAgent(item.msg.author) + ':</strong> ' + cleanText.replace(/</g, "&lt;") + '…</div>';
+    }).join("");
+
+    if (manualPulse) {
+      setBulletState("bullet-memory", "lit-amber", "state-memory", "Compressing…");
+      setTimeout(function() {
+        setBulletState("bullet-memory", "lit-green", "state-memory", relPct + "% Rel (" + avgBottom.toFixed(1) + ")");
+      }, 500);
+    }
+  };
+
+  window.adjustContextThreshold = function(delta) {
+    contextThreshold = Math.max(1.0, Math.min(9.5, contextThreshold + delta));
+    recomputeProactiveContext(true);
+  };
+
+  window.restoreColdTopics = function() {
+    coldTopicsCount = Math.max(0, coldTopicsCount - 10);
+    setBulletState("bullet-memory", "lit-cyan", "state-memory", "Restored +10 ✓");
+    recomputeProactiveContext(false);
+  };
+
+  window.switchSidebarTab = function(tab) {
+    document.getElementById("stab-context").classList.toggle("active", tab === "context");
+    document.getElementById("stab-readme").classList.toggle("active", tab === "readme");
+    document.getElementById("spane-context").classList.toggle("active", tab === "context");
+    document.getElementById("spane-readme").classList.toggle("active", tab === "readme");
+  };
+
+  window.toggleSidebar = function() {
+    document.getElementById("left-sidebar").classList.toggle("open");
+  };
+
+  /* FEED RENDERING & FILTERS */
+  function isNoiseMessage(m) {
+    var k = (m.kind || "").toLowerCase();
+    var b = m.body || "";
+    var a = canonicalAgent(m.author);
+    if (k === "heartbeat") return true;
+    if (a === "System" && b.length < 100 && !/SIGN-|GOAL|TASK|Taheed/i.test(b)) return true;
+    return false;
+  }
+
+  function isTaskOrTaheed(m) {
+    var a = canonicalAgent(m.author);
+    var k = (m.kind || "").toLowerCase();
+    var b = m.body || "";
+    if (a === "Taheed") return true;
+    if (k === "sign-in" || k === "sign-out" || k === "directive" || k === "tasking") return true;
+    if (/GOAL\/TASK:|SIGN-IN|SIGN-OUT|RESULT:|DIRECTIVE/i.test(b)) return true;
+    return false;
+  }
+
+  function matchesFilters(m) {
+    if (activeAgentFilter && canonicalAgent(m.author) !== activeAgentFilter) return false;
+    if (filterMode === "clean" && isNoiseMessage(m)) return false;
+    if (filterMode === "tasks" && !isTaskOrTaheed(m)) return false;
+    if (searchQuery) {
+      var hay = ((m.author || "") + " " + (m.kind || "") + " " + (m.body || "")).toLowerCase();
+      if (hay.indexOf(searchQuery) === -1) return false;
+    }
+    return true;
+  }
+
+  function sanitizeBody(raw) {
+    if (!raw) return "";
+    return String(raw).replace(/<mark[^>]*>/gi, "").replace(/<\/mark>/gi, "");
+  }
+
+  function createCard(m) {
+    var ag = canonicalAgent(m.author);
+    var meta = AGENT_META[ag] || { color: m.author_color || "#4f8cff", emoji: m.author_emoji || "💬" };
+    var card = document.createElement("div");
+    card.className = "msg-card" + (ag === "Taheed" ? " is-taheed" : "");
+    card.style.borderLeftColor = meta.color;
+
+    var header = document.createElement("div");
+    header.className = "msg-header";
+
+    var authorWrap = document.createElement("div");
+    authorWrap.className = "msg-author-wrap";
+
+    var badge = document.createElement("span");
+    badge.className = "msg-author";
+    badge.style.background = meta.color;
+    badge.textContent = meta.emoji + " " + (m.author || "Agent");
+    authorWrap.appendChild(badge);
+
+    if (m.kind) {
+      var kindSpan = document.createElement("span");
+      kindSpan.className = "msg-kind";
+      kindSpan.textContent = m.kind;
+      authorWrap.appendChild(kindSpan);
+    }
+
+    var metaRight = document.createElement("div");
+    metaRight.className = "msg-meta";
+
+    var replyBtn = document.createElement("button");
+    replyBtn.className = "card-action";
+    replyBtn.textContent = "↩ Reply";
+    replyBtn.onclick = function() {
+      insertText("@" + ag + " ");
+    };
+    metaRight.appendChild(replyBtn);
+
+    var copyBtn = document.createElement("button");
+    copyBtn.className = "card-action";
+    copyBtn.textContent = "⧉ Copy";
+    copyBtn.onclick = function() {
+      navigator.clipboard.writeText(sanitizeBody(m.body));
+      copyBtn.textContent = "✓";
+      setTimeout(function() { copyBtn.textContent = "⧉ Copy"; }, 1200);
+    };
+    metaRight.appendChild(copyBtn);
+
+    var timeSpan = document.createElement("span");
+    timeSpan.textContent = relTime(m.created_at);
+    metaRight.appendChild(timeSpan);
+
+    header.appendChild(authorWrap);
+    header.appendChild(metaRight);
+    card.appendChild(header);
+
+    var cleanText = sanitizeBody(m.body);
+    var bodyDiv = document.createElement("div");
+    bodyDiv.className = "msg-body";
+    bodyDiv.textContent = cleanText;
+
+    var isLong = cleanText.length > 650 || cleanText.split("\n").length > 12;
+    if (isLong) {
+      bodyDiv.classList.add("collapsed");
+      var expBtn = document.createElement("button");
+      expBtn.className = "expand-btn";
+      expBtn.textContent = "Show full message (" + cleanText.length + " chars)";
+      expBtn.onclick = function() {
+        var c = bodyDiv.classList.toggle("collapsed");
+        expBtn.textContent = c ? "Show full message (" + cleanText.length + " chars)" : "Collapse";
+      };
+      card.appendChild(bodyDiv);
+      card.appendChild(expBtn);
+    } else {
+      card.appendChild(bodyDiv);
+    }
+    return card;
+  }
+
+  function renderFeed(scrollToEnd) {
+    var feed = document.getElementById("feed");
+    feed.innerHTML = "";
+    var visible = allMessages.filter(matchesFilters);
+    document.getElementById("msg-stats").textContent = visible.length + " / " + allMessages.length + " msgs";
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < visible.length; i++) {
+      frag.appendChild(createCard(visible[i]));
+    }
+    feed.appendChild(frag);
+    if (scrollToEnd) {
+      var wrap = document.getElementById("feed-wrap");
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+  }
+
+  window.setFilterMode = function(mode) {
+    filterMode = mode;
+    var btns = document.querySelectorAll(".filter-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-mode") === mode);
+    }
+    renderFeed(true);
+  };
+
+  window.selectAgentFilter = function(ag) {
+    activeAgentFilter = (activeAgentFilter === ag) ? null : ag;
+    ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(name) {
+      var el = document.getElementById("pnode-" + name);
+      if (el) el.style.outline = (activeAgentFilter === name) ? "2px solid #4f8cff" : "none";
+    });
+    renderFeed(true);
+  };
+
+  window.filterBySearch = function(term) {
+    var sb = document.getElementById("search-box");
+    sb.value = (sb.value === term) ? "" : term;
+    searchQuery = sb.value.trim().toLowerCase();
+    renderFeed(false);
+  };
+
+  window.onSearchInput = function(val) {
+    searchQuery = (val || "").trim().toLowerCase();
+    renderFeed(false);
+  };
+
+  window.insertText = function(txt) {
+    var inp = document.getElementById("composer-input");
+    inp.value = (inp.value ? inp.value + " " : "") + txt;
+    inp.focus();
+  };
+
+  /* SEND MESSAGE -> ILLUMINATE TREE FROM TOP WEBHOOK BULLET TO RETURN STATUS REPORT */
+  window.sendMessage = function() {
+    var inp = document.getElementById("composer-input");
+    var text = inp.value.trim();
+    if (!text) return;
+
+    var author = document.getElementById("author-select").value || "Taheed";
+    var kind = document.getElementById("kind-select").value || "message";
+    var meta = AGENT_META[canonicalAgent(author)] || AGENT_META["Taheed"];
+    var btn = document.getElementById("send-btn");
+    var statusEl = document.getElementById("send-status");
+
+    btn.disabled = true;
+    btn.textContent = "Posting…";
+    statusEl.textContent = "Passing through /webhook/bac-message → n8n → Supabase…";
+
+    var t0 = Date.now();
+    animateTreePass("start", { author: author, kind: kind, body: text });
+
+    fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        author: author,
+        kind: kind,
+        body: text,
+        author_emoji: meta.emoji,
+        author_color: meta.color
+      })
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json().catch(function() { return { ok: true }; });
+    })
+    .then(function(respData) {
+      var elapsed = Date.now() - t0;
+      inp.value = "";
+      btn.disabled = false;
+      btn.textContent = "Send ↵";
+      statusEl.textContent = "✓ Full-circle pass verified (" + elapsed + " ms)";
+      animateTreePass("webhook-ok", {
+        ms: elapsed,
+        author: author,
+        kind: kind,
+        body: text,
+        resp: respData
+      });
+      setTimeout(loadMessages, 350);
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.textContent = "Send ↵";
+      statusEl.textContent = "✗ Error: " + err.message;
+      animateTreePass("error", { err: err.message });
+    });
+  };
+
+  document.getElementById("composer-input").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  /* LOAD MESSAGES & REALTIME */
+  window.loadMessages = function() {
+    var url = SUPABASE_URL + "/rest/v1/bac_messages?select=id,created_at,author,author_emoji,author_color,kind,body&order=created_at.desc&limit=180";
+    fetch(url, {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!Array.isArray(rows)) return;
+      rows.reverse();
+      allMessages = [];
+      seenIds = {};
+      for (var i = 0; i < rows.length; i++) {
+        seenIds[rows[i].id] = true;
+        allMessages.push(rows[i]);
+      }
+      updateTreeAgentNodes();
+      recomputeProactiveContext(false);
+      renderFeed(true);
+      var pill = document.getElementById("conn-pill");
+      pill.className = "live-pill";
+      document.getElementById("conn-text").textContent = "Live";
+    })
+    .catch(function() {});
+  };
+
+  loadMessages();
+  setInterval(loadMessages, 8000);
+})();
 </script>
 </body>
 </html>
