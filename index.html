@@ -936,13 +936,6 @@
                 <div class="p-node-state" id="state-MUZI">Ready</div>
               </div>
             </div>
-            <div class="parallel-bullet-item" id="pnode-Hermes" onclick="selectAgentFilter('Hermes')">
-              <span class="node-bullet lit-green" id="bullet-Hermes"></span>
-              <div class="p-node-info">
-                <div class="p-node-name">⚡ Hermes/Dolph</div>
-                <div class="p-node-state" id="state-Hermes">Zeabur MCP</div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1093,7 +1086,6 @@
           <button class="quick-chip" onclick="insertText('@Claude ')">@Claude</button>
           <button class="quick-chip" onclick="insertText('@Antigravity ')">@Antigravity</button>
           <button class="quick-chip" onclick="insertText('@Copilot ')">@Copilot</button>
-          <button class="quick-chip" onclick="insertText('@Hermes ')">@Hermes</button>
           <button class="quick-chip cmd" onclick="insertText('GOAL/TASK: [APPROVED — GO] ')">✓ APPROVE</button>
           <button class="quick-chip cmd" onclick="insertText('HOLD / PAUSE: ')">✋ HOLD</button>
           <button class="quick-chip cmd" onclick="insertText('VERIFY WITH PROOF: ')">🔍 VERIFY</button>
@@ -1203,7 +1195,7 @@
       setBulletState("bullet-inboxes", "lit-cyan", "state-inboxes", "Routing…");
       // Highlight targeted agents
       var body = (details && details.body) || "";
-      ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+      ["Antigravity", "Claude", "Copilot", "MUZI"].forEach(function(ag) {
         var re = new RegExp("@" + ag + "|@all", "i");
         if (re.test(body)) {
           setBulletState("bullet-" + ag, "lit-amber", "state-" + ag, "Targeted ⚡");
@@ -1221,7 +1213,7 @@
       setBulletState("bullet-inboxes", "lit-green", "state-inboxes", "Inboxes Fed ✓");
       setBulletState("bullet-memory", "lit-green", "state-memory", "N/V/A Weighed ✓");
 
-      ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+      ["Antigravity", "Claude", "Copilot", "MUZI"].forEach(function(ag) {
         setBulletState("bullet-" + ag, "lit-green", null, undefined);
       });
 
@@ -1277,9 +1269,8 @@
         latest[ag] = m;
       }
     }
-    ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(ag) {
+    ["Antigravity", "Claude", "Copilot", "MUZI"].forEach(function(ag) {
       var info = latest[ag];
-      if (!info && ag === "Hermes") info = latest["Dolphin"] || latest["Ollama"];
       var stEl = document.getElementById("state-" + ag);
       var bEl = document.getElementById("bullet-" + ag);
       if (stEl && info) {
@@ -1578,7 +1569,7 @@
 
   window.selectAgentFilter = function(ag) {
     activeAgentFilter = (activeAgentFilter === ag) ? null : ag;
-    ["Antigravity", "Claude", "Copilot", "MUZI", "Hermes"].forEach(function(name) {
+    ["Antigravity", "Claude", "Copilot", "MUZI"].forEach(function(name) {
       var el = document.getElementById("pnode-" + name);
       if (el) el.style.outline = (activeAgentFilter === name) ? "2px solid #4f8cff" : "none";
     });
