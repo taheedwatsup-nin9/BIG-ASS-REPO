@@ -1613,16 +1613,29 @@
     var t0 = Date.now();
     animateTreePass("start", { author: author, kind: kind, body: text });
 
+    var payload = {
+      author: author,
+      kind: kind,
+      body: text,
+      author_emoji: meta.emoji,
+      author_color: meta.color
+    };
+    // Only Taheed's posts that carry his route key wake agents (n8n checks its hash; the key is never stored).
+    // Asked once per device and kept in this browser only.
+    if (canonicalAgent(author) === "Taheed") {
+      var routeKey = "";
+      try { routeKey = localStorage.getItem("bacRouteKey") || ""; } catch (e) {}
+      if (!routeKey) {
+        routeKey = (window.prompt("Route key (4 words) so agents answer you. Asked once on this device:") || "").trim();
+        if (routeKey) { try { localStorage.setItem("bacRouteKey", routeKey); } catch (e) {} }
+      }
+      if (routeKey) payload.bac_key = routeKey;
+    }
+
     fetch(WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        author: author,
-        kind: kind,
-        body: text,
-        author_emoji: meta.emoji,
-        author_color: meta.color
-      })
+      body: JSON.stringify(payload)
     })
     .then(function(res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
